@@ -1,3 +1,12 @@
+#include "FastLED.h"
+
+//--------LED----------
+#define PIN_RBGLED 4
+#define NUM_LEDS 1
+CRGB leds[NUM_LEDS];
+int r=0,g=0,b=0;
+//--------------------
+
 
 //-------Ultrasonido--------------
 #define TRIG_PIN 13  
@@ -5,9 +14,9 @@
 //--------------------------------
 
 //-------Inflarrojo---------------
-#define PIN_ITR20001-LEFT   A2
-#define PIN_ITR20001-MIDDLE A1
-#define PIN_ITR20001-RIGHT  A0
+#define PIN_ITR20001_LEFT   A2
+#define PIN_ITR20001_MIDDLE A1
+#define PIN_ITR20001_RIGHT  A0
 
 // Umbral de detección de línea
 //Cuando detecta por ejemplo blanco el valor está entre 800 y 900 
@@ -38,6 +47,13 @@ int mid_val;
 #define PIN_Motor_PWMB 6
 //-----------------------------
 
+
+uint32_t Color(uint8_t r, uint8_t g, uint8_t b)
+{
+  return (((uint32_t)r << 16) | ((uint32_t)g << 8) | b);
+}
+
+
 // Function to control motors
 void motorControl(bool motorAForward, int speedA, bool motorBForward, int speedB) {
   // Control motor A (RIGHT)
@@ -53,16 +69,34 @@ void motorControl(bool motorAForward, int speedA, bool motorBForward, int speedB
 void sensorReading(){
   left_val = analogRead(A2); // read from left Sensor
   right_val = analogRead(A0);
-  mid_val =  analogRead(A1)
+  mid_val =  analogRead(A1);
 }
 
 void turnLeft(){
+  //LED RED
+  r=255;
+  g=0;
+  b=0;
+  FastLED.showColor(Color(r, g, b));
+  //move
   motorControl(true,175,false,0);
 }
 void turnRight(){
+  //LED RED
+  r=255;
+  g=0;
+  b=0;
+  FastLED.showColor(Color(r, g, b));
+  //move
   motorControl(false,0,true,175);
 }
 void forward(){
+  //LED GREEN
+  r=0;
+  g=255;
+  b=0;
+  FastLED.showColor(Color(r, g, b));
+  //move
   motorControl(true,175,true,175);
 }
 void stop_motors(){
@@ -94,9 +128,9 @@ void setup() {
   pinMode(ECHO_PIN, INPUT);
   
   //inflarrojos
-  pinMode(PIN_ITR20001-LEFT, INPUT);
-  pinMode(PIN_ITR20001-MIDDLE, INPUT);
-  pinMode(PIN_ITR20001-RIGHT, INPUT);
+  pinMode(PIN_ITR20001_LEFT, INPUT);
+  pinMode(PIN_ITR20001_MIDDLE, INPUT);
+  pinMode(PIN_ITR20001_RIGHT, INPUT);
   //motors
   // Turn on the engines !!!!
   digitalWrite(PIN_Motor_STBY, HIGH);
@@ -107,6 +141,12 @@ void setup() {
   pinMode(PIN_Motor_BIN_1, OUTPUT);
   pinMode(PIN_Motor_PWMB, OUTPUT);
 
+  // LED
+  FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
+  FastLED.setBrightness(20);
+
+
+  
   Serial.begin(9600); // // Serial Communication is starting with 9600 of baudrate speed
 
 }
@@ -117,15 +157,16 @@ void loop() {
   sensorReading();
   int distance = ping(TRIG_PIN,ECHO_PIN);
   
-  if(leftValue <= threshold && rightValue >= threshold){
+  if(left_val <= threshold && right_val >= threshold){//LEFT
     turnLeft();
-  }else if(leftValue >= threshold && rightValue <= threshold ){
+  }else if(left_val >= threshold && right_val <= threshold ){//RIGHT
     turnRight();
-  }else if(leftValue <= threshold && rightValue <= threshold){
+  }else if(left_val <= threshold && right_val <= threshold){//FORWARD
     forward();
-  }else if(distance < 20){
-    stop_motors()
+  }else if(distance < 20){//STOP
+    stop_motors();
   }//else if(leftValue == 1 && rightValue == 1){
     //recovery();
   //}
+  delay(50);
 }
