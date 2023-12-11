@@ -103,11 +103,31 @@ void forward(){
   motorControl(true,i_show_speed_linear,true,i_show_speed_linear);
 }
 void stop_motors(){
+  //LED Blue
+  r=0;
+  g=0;
+  b=255;
+  FastLED.showColor(Color(r, g, b));
   motorControl(false,0,false,0);
   delay(10000);
 }
-//void recovery(){
-//  motorControl(false,0,false,i_show_speed_angular);
+
+
+// Define a global variable to store the start time of recovery
+//unsigned long recoveryStartTime = 0;
+//bool isRecovering = false;
+//void recovery() {
+//  if (!isRecovering) {
+    // Set the start time only when entering the recovery mode
+    //recoveryStartTime = millis();
+    //isRecovering = true;
+  //}
+
+  // Calculate the elapsed time since the recovery started
+  //unsigned long elapsedTime = millis() - recoveryStartTime;
+
+  //delay(elapsedTime)
+  //motorControl(false, i_show_speed_linear, false, i_show_speed_linear);
 //}
 
 int ping(int TriggerPin, int EchoPin) {
@@ -154,7 +174,6 @@ void setup() {
   Serial.begin(9600); // // Serial Communication is starting with 9600 of baudrate speed
 
 }
-
 
 
 void loop() {
