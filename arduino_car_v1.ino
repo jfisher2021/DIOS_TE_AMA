@@ -21,7 +21,7 @@ int r=0,g=0,b=0;
 // Umbral de detección de línea
 //Cuando detecta por ejemplo blanco el valor está entre 800 y 900 
 //pero cuando detecta negro el valor baja mucho. Ponemos este umbral:
-const int threshold = 700;
+const int threshold = 400;//700
 
 int left_val;
 int right_val;
@@ -45,6 +45,9 @@ int mid_val;
 #define PIN_Motor_BIN_1 8
 // PIN_Motor_PWMB: Analog output [0-255]. It provides speed.
 #define PIN_Motor_PWMB 6
+
+const int i_show_speed_linear = 50;
+const int i_show_speed_angular = 125;
 //-----------------------------
 
 
@@ -79,7 +82,7 @@ void turnLeft(){
   b=0;
   FastLED.showColor(Color(r, g, b));
   //move
-  motorControl(true,175,false,0);
+  motorControl(true,i_show_speed_angular,false,0);
 }
 void turnRight(){
   //LED RED
@@ -88,7 +91,7 @@ void turnRight(){
   b=0;
   FastLED.showColor(Color(r, g, b));
   //move
-  motorControl(false,0,true,175);
+  motorControl(false,0,true,i_show_speed_angular);
 }
 void forward(){
   //LED GREEN
@@ -97,13 +100,14 @@ void forward(){
   b=0;
   FastLED.showColor(Color(r, g, b));
   //move
-  motorControl(true,175,true,175);
+  motorControl(true,i_show_speed_linear,true,i_show_speed_linear);
 }
 void stop_motors(){
   motorControl(false,0,false,0);
+  delay(10000);
 }
 //void recovery(){
-//  motorControl(false,0,false,200);
+//  motorControl(false,0,false,i_show_speed_angular);
 //}
 
 int ping(int TriggerPin, int EchoPin) {
@@ -156,17 +160,18 @@ void setup() {
 void loop() {
   sensorReading();
   int distance = ping(TRIG_PIN,ECHO_PIN);
+  Serial.println(distance);
   
-  if(left_val <= threshold && right_val >= threshold){//LEFT
-    turnLeft();
-  }else if(left_val >= threshold && right_val <= threshold ){//RIGHT
+  if(left_val <= threshold && right_val >= threshold){//RIGHT
     turnRight();
+  }else if(left_val >= threshold && right_val <= threshold ){//LEFT
+    turnLeft();
   }else if(left_val <= threshold && right_val <= threshold){//FORWARD
     forward();
   }else if(distance < 20){//STOP
     stop_motors();
-  }//else if(leftValue == 1 && rightValue == 1){
+  }//else if(left_val >= threshold && right_val >= threshold && mid_val >= threshold){
     //recovery();
   //}
-  delay(50);
+  delay(5);
 }
