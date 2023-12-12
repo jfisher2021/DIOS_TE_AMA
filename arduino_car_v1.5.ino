@@ -170,11 +170,11 @@ void loop() {
     int distance = ping(TRIG_PIN, ECHO_PIN);
     Serial.println(distance);
 
-    if (left_val <= threshold && right_val >= threshold && mid_val <= threshold) {  // RIGHT
+    if (right_val >= threshold ) {  // RIGHT
         turnRight();
-    } else if (left_val >= threshold && right_val <= threshold && mid_val <= threshold) {  // LEFT
+    } else if (left_val >= threshold) {  // LEFT
         turnLeft();
-    } else if (left_val <= threshold && right_val <= threshold && mid_val >= threshold) {  // FORWARD
+    } else if (mid_val >= threshold) {  // FORWARD
         forward();
     }
 
