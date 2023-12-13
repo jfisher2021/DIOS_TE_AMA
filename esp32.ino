@@ -13,6 +13,10 @@ const char* password = "tdko9519";
 const char* topic = "/SETR/2023/3/";
 const char* id_equipo = "3";
 
+unsigned long TimeStart = 0;
+unsigned long lastPingTime = 0; 
+
+
 WiFiClient client;
 Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_KEY);
 
@@ -29,10 +33,10 @@ void connectToWiFi() {
     delay(1000);
   }
 
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-  Serial.print("RRSI: ");
-  Serial.println(WiFi.RSSI());
+  //Serial.print("IP Address: ");
+  //Serial.println(WiFi.localIP());
+  //Serial.print("RRSI: ");
+  //Serial.println(WiFi.RSSI());
 }
 
 void connectToMQTT() {
@@ -56,20 +60,75 @@ void publishData(const char* data) {
   }
 }
 
+void start_lap_message(){
+  //First message once ESP32 is fully connected
+  StaticJsonDocument<200> jsonDoc;
+  jsonDoc["team_name"] = "DIOS_TE_AMA";
+  jsonDoc["id"] = "$ID_EQUIPO";
+  jsonDoc["action"] = "START_LAP";
+  // Serialize JSON to chain
+  char message[256];
+  serializeJson(jsonDoc, message);
+  myFeed.publish(topic, message);
+}
+void end_lap_message(unsigned long total_time){
+  StaticJsonDocument<200> jsonDoc;
+  jsonDoc["team_name"] = "DIOS_TE_AMA";
+  jsonDoc["id"] = "$ID_EQUIPO";
+  jsonDoc["action"] = "END_LAP";
+  jsonDoc["time"] = total_time;
+  // Serialize JSON to chain
+  char message[256];
+  serializeJson(jsonDoc, message);
+  myFeed.publish(topic, message);
+}
 
+//void obstacle_message(){
+//
+//}
+
+void track_loose_message(){
+  StaticJsonDocument<200> jsonDoc;
+  jsonDoc["team_name"] = "DIOS_TE_AMA";
+  jsonDoc["id"] = "$ID_EQUIPO";
+  jsonDoc["action"] = "LINE_LOST";
+  // Serialize JSON to chain
+  char message[256];
+  serializeJson(jsonDoc, message);
+  myFeed.publish(topic, message);
+}
+
+void ping_message(unsigned long lastPingTime){
+  StaticJsonDocument<200> jsonDoc;
+  jsonDoc["team_name"] = "DIOS_TE_AMA";
+  jsonDoc["id"] = "$ID_EQUIPO";
+  jsonDoc["action"] = "PING";
+  jsonDoc["time"] = lastPingTime;
+  // Serialize JSON to chain
+  char message[256];
+  serializeJson(jsonDoc, message);
+  myFeed.publish(topic, message);
+}
 
 void setup() {
   Serial.begin(115200);
   connectToWiFi();
+  connectToMQTT();
+  //message when starting the lap
+  start_lap_message();
+  //take initial time:
+  TimeStart = millis();
 }
 
 void loop() {
-  connectToMQTT();
   // Mensaje a enviar
-
-  String mensaje = "Hola, este es un mensaje desde el equipo " + String(id_equipo);
-
-  // Publicar mensaje en el tema específico
-  myFeed.publish(topic, mensaje.c_str());
-  //publishData("Hello, MQTT!");
+  unsigned long partial_time = millis() - lastPingTime;
+  //send each 4 seconds
+  if (tiempoTranscurrido >= 4000) {
+    ping_message(lastPingTime);
+    lastPingTime = millis();  // Actualiza el tiempo del último mensaje PING
+  }
+  //ultrasonidos esté cerca:
+  unsigned long total_time = millis() - TimeStart;
+  end_lap_message(total_time);
 }
