@@ -4,28 +4,35 @@
 #define PIN_RBGLED 4
 #define NUM_LEDS 1
 CRGB leds[NUM_LEDS];
-int r=0,g=0,b=0;
+int r = 0, g = 0, b = 0;
 //--------------------
 
-
 //-------Ultrasonido--------------
-#define TRIG_PIN 13  
-#define ECHO_PIN 12  
+#define TRIG_PIN 13
+#define ECHO_PIN 12
 //--------------------------------
 
 //-------Inflarrojo---------------
-#define PIN_ITR20001_LEFT   A2
+#define PIN_ITR20001_LEFT A2
 #define PIN_ITR20001_MIDDLE A1
-#define PIN_ITR20001_RIGHT  A0
+#define PIN_ITR20001_RIGHT A0
+
+//-------Constantes---------------
+#define DISTANCIA 10
+#define LINEA 700
+#define MITAD_LINEA 250
 
 // Umbral de detección de línea
-//Cuando detecta por ejemplo blanco el valor está entre 800 y 900 
-//pero cuando detecta negro el valor baja mucho. Ponemos este umbral:
-const int threshold = 633;//700
+// Cuando detecta por ejemplo blanco el valor está entre 800 y 900
+// pero cuando detecta negro el valor baja mucho. Ponemos este umbral:
+
+// con 700 - 800 esta en linea
+// con 200-500 esta entrando el linea (0 saliendo)
 
 int left_val;
 int right_val;
 int mid_val;
+int anterior;
 //--------------------------------
 
 //-------Motor------------------
@@ -46,184 +53,160 @@ int mid_val;
 // PIN_Motor_PWMB: Analog output [0-255]. It provides speed.
 #define PIN_Motor_PWMB 6
 
-const int i_show_speed_linear = 100;
+const int i_show_speed_linear = 80;
 const int i_show_speed_angular = 150;
+const int giro_poco = 70;
+
 //-----------------------------
 
-
-uint32_t Color(uint8_t r, uint8_t g, uint8_t b)
-{
-  return (((uint32_t)r << 16) | ((uint32_t)g << 8) | b);
+uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
+    return (((uint32_t)r << 16) | ((uint32_t)g << 8) | b);
 }
-
 
 // Function to control motors
 void motorControl(bool motorAForward, int speedA, bool motorBForward, int speedB) {
-  // Control motor A (RIGHT)
-  digitalWrite(PIN_Motor_AIN_1, motorAForward ? HIGH : LOW);
-  analogWrite(PIN_Motor_PWMA, speedA);
+    // Control motor A (RIGHT)
+    digitalWrite(PIN_Motor_AIN_1, motorAForward ? HIGH : LOW);
+    analogWrite(PIN_Motor_PWMA, speedA);
 
-  // Control motor B (LEFT)
-  digitalWrite(PIN_Motor_BIN_1, motorBForward ? HIGH : LOW);
-  analogWrite(PIN_Motor_PWMB, speedB);
+    // Control motor B (LEFT)
+    digitalWrite(PIN_Motor_BIN_1, motorBForward ? HIGH : LOW);
+    analogWrite(PIN_Motor_PWMB, speedB);
+}
+
+void sensorReading() {
+    left_val = analogRead(A2);  // read from left Sensor
+    right_val = analogRead(A0);
+    mid_val = analogRead(A1);
+}
+
+void turnLeft(int valor_left) {
+    // LED RED
+    r = 255;
+    g = 0;
+    b = 0;
+    FastLED.showColor(Color(r, g, b));
+    // move
+    motorControl(true, valor_left, false, 0);
+}
+void turnRight(int valor_right) {
+    // LED RED
+    r = 255;
+    g = 0;
+    b = 0;
+    FastLED.showColor(Color(r, g, b));
+    // move
+    motorControl(false, 0, true, valor_right);
+}
+void forward(int valor_forward) {
+    // LED GREEN
+    r = 0;
+    g = 255;
+    b = 0;
+    FastLED.showColor(Color(r, g, b));
+    // move
+    motorControl(true, valor_forward, true, valor_forward);
+}
+void stop_motors() {
+    // LED Blue
+    r = 0;
+    g = 0;
+    b = 255;
+    FastLED.showColor(Color(r, g, b));
+    motorControl(false, 0, false, 0);
+    delay(3000);
 }
 
 
-void sensorReading(){
-  left_val = analogRead(A2); // read from left Sensor
-  right_val = analogRead(A0);
-  mid_val =  analogRead(A1);
+void recovery(int anterior_val) {
+    switch (anterior_val) {
+        case 1:
+            turnRight(i_show_speed_angular);
+            break;
+        case 2:
+            turnLeft(i_show_speed_angular);
+            break;
+        default:
+            break;
+    }
 }
-
-void turnLeft(){
-  //LED RED
-  r=255;
-  g=0;
-  b=0;
-  FastLED.showColor(Color(r, g, b));
-  //move
-  motorControl(true,i_show_speed_angular,false,0);
-}
-void turnRight(){
-  //LED RED
-  r=255;
-  g=0;
-  b=0;
-  FastLED.showColor(Color(r, g, b));
-  //move
-  motorControl(false,0,true,i_show_speed_angular);
-}
-void forward(){
-  //LED GREEN
-  r=0;
-  g=255;
-  b=0;
-  FastLED.showColor(Color(r, g, b));
-  //move
-  motorControl(true,i_show_speed_linear,true,i_show_speed_linear);
-}
-void stop_motors(){
-  //LED Blue
-  r=0;
-  g=0;
-  b=255;
-  FastLED.showColor(Color(r, g, b));
-  motorControl(false,0,false,0);
-  delay(10000);
-}
-
-
-// Define a global variable to store the start time of recovery
-//unsigned long recoveryStartTime = 0;
-//bool isRecovering = false;
-//void recovery() {
-//  if (!isRecovering) {
-    // Set the start time only when entering the recovery mode
-    //recoveryStartTime = millis();
-    //isRecovering = true;
-  //}
-
-  // Calculate the elapsed time since the recovery started
-  //unsigned long elapsedTime = millis() - recoveryStartTime;
-
-  //delay(elapsedTime)
-  //motorControl(false, i_show_speed_linear, false, i_show_speed_linear);
-//}
 
 int ping(int TriggerPin, int EchoPin) {
-  long duration, distanceCm;
-  
-  digitalWrite(TriggerPin, LOW);  //para generar un pulso limpio ponemos a LOW 4us
-  delayMicroseconds(4);
-  digitalWrite(TriggerPin, HIGH);  //generamos Trigger (disparo) de 10us
-  delayMicroseconds(10);
-  digitalWrite(TriggerPin, LOW);
-  
-  duration = pulseIn(EchoPin, HIGH);  //medimos el tiempo entre pulsos, en microsegundos
-  
-  distanceCm = duration * 10 / 292/ 2;   //convertimos a distancia, en cm
-  return distanceCm;
+    long duration, distanceCm;
+
+    digitalWrite(TriggerPin, LOW);  // para generar un pulso limpio ponemos a LOW 4us
+    delayMicroseconds(4);
+    digitalWrite(TriggerPin, HIGH);  // generamos Trigger (disparo) de 10us
+    delayMicroseconds(10);
+    digitalWrite(TriggerPin, LOW);
+
+    duration = pulseIn(EchoPin, HIGH);  // medimos el tiempo entre pulsos, en microsegundos
+
+    distanceCm = duration * 10 / 292 / 2;  // convertimos a distancia, en cm
+    return distanceCm;
 }
 
-
-// Variables del controlador PID
-double kp = 0.5;  // Ganancia proporcional
-double ki = 0.2;  // Ganancia integral
-double kd = 0.1;  // Ganancia derivativa
-
-double setpoint = 0;  // Valor objetivo
-double input = 0;     // Valor actual
-double output = 0;    // Valor de salida
-
-double error = 0;           // Error actual
-double last_error = 0;      // Error anterior
-double integral = 0;        // Término integral
-double derivative = 0;      // Término derivativo
-
-unsigned long last_time = 0;  // Último tiempo de actualización
-
 void setup() {
-  //ultrasonidos
-  pinMode(TRIG_PIN, OUTPUT);
-  pinMode(ECHO_PIN, INPUT);
-  
-  //inflarrojos
-  pinMode(PIN_ITR20001_LEFT, INPUT);
-  pinMode(PIN_ITR20001_MIDDLE, INPUT);
-  pinMode(PIN_ITR20001_RIGHT, INPUT);
-  //motors
-  // Turn on the engines !!!!
-  digitalWrite(PIN_Motor_STBY, HIGH);
-  // Set motor control pins as outputs
-  pinMode(PIN_Motor_STBY, OUTPUT);
-  pinMode(PIN_Motor_AIN_1, OUTPUT);
-  pinMode(PIN_Motor_PWMA, OUTPUT);
-  pinMode(PIN_Motor_BIN_1, OUTPUT);
-  pinMode(PIN_Motor_PWMB, OUTPUT);
+    // ultrasonidos
+    pinMode(TRIG_PIN, OUTPUT);
+    pinMode(ECHO_PIN, INPUT);
 
-  // LED
-  FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
-  FastLED.setBrightness(20);
+    // inflarrojos
+    pinMode(PIN_ITR20001_LEFT, INPUT);
+    pinMode(PIN_ITR20001_MIDDLE, INPUT);
+    pinMode(PIN_ITR20001_RIGHT, INPUT);
+    // motors
+    //  Turn on the engines !!!!
+    digitalWrite(PIN_Motor_STBY, HIGH);
+    // Set motor control pins as outputs
+    pinMode(PIN_Motor_STBY, OUTPUT);
+    pinMode(PIN_Motor_AIN_1, OUTPUT);
+    pinMode(PIN_Motor_PWMA, OUTPUT);
+    pinMode(PIN_Motor_BIN_1, OUTPUT);
+    pinMode(PIN_Motor_PWMB, OUTPUT);
 
+    // LED
+    FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
+    FastLED.setBrightness(20);
 
-  
-  Serial.begin(9600); // // Serial Communication is starting with 9600 of baudrate speed
-
+    Serial.begin(9600);  // // Serial Communication is starting with 9600 of baudrate speed
 }
 
 void loop() {
-  // Actualizar el valor actual (input)
-  sensorReading();
-  int distance = ping(TRIG_PIN, ECHO_PIN);
-  input = distance;
+    sensorReading();
+    int distance = ping(TRIG_PIN, ECHO_PIN);
+    // Serial.println(distance);
+    Serial.print("left_val       ");
 
-  // Calcular el error
-  error = setpoint - input;
+    Serial.println(left_val);
+    Serial.print("rigth_val    ");
 
-  // Calcular el término integral
-  integral += error;
+    Serial.println(right_val);
+    Serial.print("mid_val         ");
 
-  // Calcular el término derivativo
-  unsigned long current_time = millis();
-  double dt = (current_time - last_time) / 1000.0;  // Tiempo transcurrido en segundos
-  derivative = (error - last_error) / dt;
+    Serial.println(mid_val);
 
-  // Calcular la salida del controlador PID
-  output = kp * error + ki * integral + kd * derivative;
+    if (right_val >= MITAD_LINEA) {  // RIGHT
+        anterior = 1;
+        if (right_val >= LINEA) {
+            turnRight(i_show_speed_angular);
+        } else {
+            turnRight(giro_poco);
+        }
+    } else if (left_val >= MITAD_LINEA) {  // LEFTç
+        anterior = 2;
+        if (left_val >= LINEA) {
+            turnLeft(i_show_speed_angular);
+        } else {
+            turnLeft(giro_poco);
+        }
+    } else if (mid_val >= LINEA) {  // FORWARD
+        forward(i_show_speed_linear);
+    } else if (left_val >= LINEA && right_val >= LINEA && mid_val >= LINEA) {
+        recovery(anterior);
+    }
 
-  // Aplicar la salida a los motores
-  if (output > 0) {
-    motorControl(true, output, true, output);
-  } else {
-    motorControl(false, -output, false, -output);
-  }
-
-  if (distance < 10) {
-    stop_motors();
-  }
-  
-  // Actualizar el tiempo y el error anterior
-  last_time = current_time;
-  last_error = error;
-
+    if (distance < DISTANCIA) {  // STOP
+        stop_motors();
+    }
 }
