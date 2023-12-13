@@ -121,10 +121,10 @@ void setup() {
 }
 
 void loop() {
-  // Mensaje a enviar
+  
   unsigned long partial_time = millis() - lastPingTime;
   //send each 4 seconds
-  if (tiempoTranscurrido >= 4000) {
+  if (partial_time >= 4000) {
     ping_message(lastPingTime);
     lastPingTime = millis();  // Actualiza el tiempo del último mensaje PING
   }
