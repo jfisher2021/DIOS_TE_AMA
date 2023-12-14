@@ -25,6 +25,8 @@ const int threshold = 500;  // 700
 int left_val;
 int right_val;
 int mid_val;
+
+int anterior;
 //--------------------------------
 
 //-------Motor------------------
@@ -48,7 +50,7 @@ int mid_val;
 // aqui tenia 90
 const int i_show_speed_linear = 90;
 
-// aqui tenia 120 
+// aqui tenia 120
 const int i_show_speed_angular = 120;
 //-----------------------------
 
@@ -104,7 +106,20 @@ void recovery() {
   r = 255;
   g = 0;
   b = 0;
+  Serial.println("recovery");
+  Serial.println(anterior);
   FastLED.showColor(Color(r, g, b));
+  if (anterior == 1) {
+    Serial.println("ha entrado en el 1 por lo tanto anterior es 1");
+    Serial.println("anterior");
+    Serial.println(anterior);
+    motorControl(false, 0, true, i_show_speed_angular*1.5);
+  } else if (anterior == 2) {
+    Serial.println("ha entrado en el 2 por lo tanto anterior es 2" );
+    Serial.println("anterior");
+    Serial.println(anterior);
+    motorControl(true, i_show_speed_angular*1.5, false, 0);
+  }
 }
 void stop_motors() {
   // LED Blue
@@ -180,18 +195,41 @@ void loop() {
   Serial.println(distance);
 
   if (right_val >= threshold) {  // RIGHT
+    anterior = 1;
+    Serial.println("anterior");
+    Serial.println(anterior);
     turnRight();
+    Serial.print("right_val      ");
+    Serial.println(right_val);
   } else if (left_val >= threshold) {  // LEFT
+    anterior = 2;
     turnLeft();
+    Serial.println("anterior");
+    Serial.println(anterior);
+    Serial.print("left_val       ");
+    Serial.println(left_val);
   } else if (mid_val >= threshold) {  // FORWARD
-    // tenia 100 y va bien 
-    forward(100);
-  }
+    // tenia 100 y va bien
+    Serial.print("mid_val         ");
 
-  if (distance < 20) {  //STOP
-    stop_motors();
-  } 
-  if (left_val >= threshold && right_val >= threshold && mid_val >= threshold) {
+    Serial.println(mid_val);
+    forward(150);
+  } else {
+    Serial.print("mid_val         ");
+
+    Serial.println(mid_val);
+
+    Serial.print("left_val       ");
+    Serial.println(left_val);
+    Serial.print("rigth_val    ");
+    Serial.println(right_val);
     recovery();
   }
+
+  if (distance < 10) {  //STOP
+    stop_motors();
+  }
+  // if (left_val <= threshold && right_val <= threshold && mid_val <= threshold) {
+  //   recovery();
+  // }
 }
