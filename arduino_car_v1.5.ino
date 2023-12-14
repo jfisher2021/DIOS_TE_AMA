@@ -16,6 +16,9 @@ int r = 0, g = 0, b = 0;
 #define PIN_ITR20001_LEFT A2
 #define PIN_ITR20001_MIDDLE A1
 #define PIN_ITR20001_RIGHT A0
+// CON 0.3 TAMBIEN VA Y 0.4 KD
+#define KP 0.245
+#define KD 0.32
 
 // Umbral de detección de línea
 // Cuando detecta por ejemplo blanco el valor está entre 800 y 900
@@ -25,7 +28,10 @@ const int threshold = 500;  // 700
 int left_val;
 int right_val;
 int mid_val;
-
+int error;
+int derivativo;
+int error_anterior;
+int velocidad;
 int anterior;
 //--------------------------------
 
@@ -75,23 +81,23 @@ void sensorReading() {
   mid_val = analogRead(A1);
 }
 
-void turnLeft() {
+void turnLeft(int vel_left) {
   // LED RED
   r = 0;
   g = 255;
   b = 0;
   FastLED.showColor(Color(r, g, b));
   // move
-  motorControl(true, i_show_speed_angular, true, i_show_speed_angular / 3);
+  motorControl(true, vel_left, true, vel_left / 3);
 }
-void turnRight() {
+void turnRight(int vel_rigth) {
   // LED RED
   r = 0;
   g = 255;
   b = 0;
   FastLED.showColor(Color(r, g, b));
   // move
-  motorControl(true, i_show_speed_angular / 3, true, i_show_speed_angular);
+  motorControl(true, vel_rigth / 3, true, vel_rigth);
 }
 void forward(int speed) {
   // LED GREEN
@@ -106,19 +112,12 @@ void recovery() {
   r = 255;
   g = 0;
   b = 0;
-  Serial.println("recovery");
-  Serial.println(anterior);
+
   FastLED.showColor(Color(r, g, b));
   if (anterior == 1) {
-    Serial.println("ha entrado en el 1 por lo tanto anterior es 1");
-    Serial.println("anterior");
-    Serial.println(anterior);
-    motorControl(false, 0, true, i_show_speed_angular*1.5);
+    motorControl(false, 0, true, i_show_speed_angular * 1.5);
   } else if (anterior == 2) {
-    Serial.println("ha entrado en el 2 por lo tanto anterior es 2" );
-    Serial.println("anterior");
-    Serial.println(anterior);
-    motorControl(true, i_show_speed_angular*1.5, false, 0);
+    motorControl(true, i_show_speed_angular * 1.5, false, 0);
   }
 }
 void stop_motors() {
@@ -191,44 +190,38 @@ void setup() {
 
 void loop() {
   sensorReading();
-  int distance = ping(TRIG_PIN, ECHO_PIN);
-  Serial.println(distance);
+  //int distance = ping(TRIG_PIN, ECHO_PIN);
+
+  error = abs(left_val - right_val);
+  derivativo = error - error_anterior;
+  velocidad = KP * error + KD * derivativo;
+  error_anterior = error;
 
   if (right_val >= threshold) {  // RIGHT
     anterior = 1;
-    Serial.println("anterior");
-    Serial.println(anterior);
-    turnRight();
-    Serial.print("right_val      ");
-    Serial.println(right_val);
+    turnRight(velocidad);
+
   } else if (left_val >= threshold) {  // LEFT
     anterior = 2;
-    turnLeft();
-    Serial.println("anterior");
-    Serial.println(anterior);
-    Serial.print("left_val       ");
-    Serial.println(left_val);
+    turnLeft(velocidad);
+
   } else if (mid_val >= threshold) {  // FORWARD
     // tenia 100 y va bien
-    Serial.print("mid_val         ");
-
-    Serial.println(mid_val);
-    forward(150);
+    forward(130);
   } else {
-    Serial.print("mid_val         ");
+    r = 255;
+    g = 0;
+    b = 0;
 
-    Serial.println(mid_val);
-
-    Serial.print("left_val       ");
-    Serial.println(left_val);
-    Serial.print("rigth_val    ");
-    Serial.println(right_val);
-    recovery();
+    FastLED.showColor(Color(r, g, b));
   }
+  // else {
+  //     recovery();
+  // }
 
-  if (distance < 10) {  //STOP
-    stop_motors();
-  }
+  //if (distance < 10) {  // STOP
+    //stop_motors();
+  //}
   // if (left_val <= threshold && right_val <= threshold && mid_val <= threshold) {
   //   recovery();
   // }
