@@ -3,16 +3,16 @@
 #include "Adafruit_MQTT_Client.h"
 #include <ArduinoJson.h>
 
-const char* ssid = "LosPollosHermanos";
-const char* password = "tdko9519";
+const char* ssid = "wifieif2";
+const char* password = "Goox0sie_WZCGGh25680000";
 
 #define MQTT_SERVER     "garceta.tsc.urjc.es"
 #define MQTT_PORT       21883
 #define MQTT_USERNAME   "Dios_te_ama"
 #define MQTT_KEY        "33"
 
-const char* topic = "/SETR/2023/3/";
-const char* id_equipo = "3";
+const char* topic = "/SETR/2023/10/";
+const char* id_equipo = "10";
 
 unsigned long TimeStart = 0;
 unsigned long lastPingTime = 0; 
@@ -32,8 +32,8 @@ void connectToWiFi() {
     delay(1000);
   }
 
-  //Serial.print("IP Address: ");
-  //Serial.println(WiFi.localIP());
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
   //Serial.print("RRSI: ");
   //Serial.println(WiFi.RSSI());
 }
@@ -132,5 +132,7 @@ void loop() {
   }
   //ultrasonidos esté cerca:
   unsigned long total_time = millis() - TimeStart;
+
   end_lap_message(total_time);
+  exit(EXIT_SUCCESS);
 }
