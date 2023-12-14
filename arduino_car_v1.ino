@@ -77,7 +77,7 @@ void turnLeft() {
     b = 0;
     FastLED.showColor(Color(r, g, b));
     // move
-    motorControl(true, i_show_speed_angular, false, 0);
+    motorControl(true, i_show_speed_angular, true, i_show_speed_angular/2);
 }
 void turnRight() {
     // LED RED
@@ -86,7 +86,7 @@ void turnRight() {
     b = 0;
     FastLED.showColor(Color(r, g, b));
     // move
-    motorControl(false, 0, true, i_show_speed_angular);
+    motorControl(true, i_show_speed_angular/2, true, i_show_speed_angular);
 }
 void forward() {
     // LED GREEN
