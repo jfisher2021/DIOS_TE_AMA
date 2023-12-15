@@ -31,7 +31,7 @@ void connectToWiFi() {
 
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
-  
+}
 
 void connectToMQTT() {
   Serial.println("Connecting to MQTT...");
@@ -39,7 +39,7 @@ void connectToMQTT() {
   int8_t ret;
   while ((ret = mqtt.connect()) != 0) {
     Serial.println(mqtt.connectErrorString(ret));
-      Serial.println("Retrying MQTT connection in 5 seconds...");
+    Serial.println("Retrying MQTT connection in 5 seconds...");
     mqtt.disconnect();
     delay(5000);
   }
@@ -88,19 +88,7 @@ void setup() {
 String sendBuff;
 
 void loop() {
-    
-  if (Serial2.available()) {
 
-    char c = Serial2.read();
-    sendBuff += c;
-
-    if (c == '}') {
-      Serial.print("Received data in serial port from Arduino: ");
-      Serial.println(sendBuff);
-
-      sendBuff = "";
-    }
-  }
 
   if (!mqtt.connected()) {
     connectToMQTT();
