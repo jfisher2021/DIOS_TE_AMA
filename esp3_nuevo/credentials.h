@@ -6,7 +6,7 @@
 
 // Replace with your actual values
 #define EAP_IDENTITY "j.fisher.2021@alumnos.urjc.es"
-#define EAP_PASSWORD "Bananitos123"
+#define EAP_PASSWORD ""
 #define EAP_USERNAME "j.fisher.2021@alumnos.urjc.es"
 
 
