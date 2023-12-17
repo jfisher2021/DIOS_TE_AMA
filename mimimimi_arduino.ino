@@ -134,41 +134,7 @@ void ping_time_check(){
   long time = millis();
   Serial.print("{PING}" + String(time) + "*");
 }
-void pid_track(){
-  sensorReading();
 
-    error = abs(left_val - right_val);
-    derivativo = error - error_anterior;
-    velocidad = KP * error + KD * derivativo;
-    error_anterior = error;
-
-    if (right_val >= threshold) {  // RIGHT
-        turnRight(velocidad);
-
-    } else if (left_val >= threshold) {  // LEFT
-        turnLeft(velocidad);
-
-    } else if (mid_val >= threshold) {  // FORWARD
-        // tenia 100 y va bien
-        forward(SPEED_LINEAR);
-    } else {
-        r = 255;
-        g = 0;
-        b = 0;
-
-        FastLED.showColor(Color(r, g, b));
-    }
-    // else {
-    //     recovery();
-    // }
-
-    if (distance < 10) {  // STOP
-      stop_motors();
-    }
-    // if (left_val <= threshold && right_val <= threshold && mid_val <= threshold) {
-    //   recovery();
-    // }
-}
 
 void setup() {
     // ultrasonidos
@@ -226,10 +192,43 @@ void setup() {
     unsigned long time_start = millis();
 
 
-    xTaskCreate(pid_track, "pid_track", 100, NULL, 2, NULL);
-    xTaskCreate(distance_ping, "CheckDistance", 100, NULL, 1, NULL);
+    //xTaskCreate(pid_track, "pid_track", 100, NULL, 2, NULL);
+    //xTaskCreate(distance_ping, "CheckDistance", 100, NULL, 1, NULL);
 }
 
 void loop() {
     controller.run();
+    sensorReading();
+
+    error = abs(left_val - right_val);
+    derivativo = error - error_anterior;
+    velocidad = KP * error + KD * derivativo;
+    error_anterior = error;
+
+    if (right_val >= threshold) {  // RIGHT
+        turnRight(velocidad);
+
+    } else if (left_val >= threshold) {  // LEFT
+        turnLeft(velocidad);
+
+    } else if (mid_val >= threshold) {  // FORWARD
+        // tenia 100 y va bien
+        forward(SPEED_LINEAR);
+    } else {
+        r = 255;
+        g = 0;
+        b = 0;
+
+        FastLED.showColor(Color(r, g, b));
+    }
+    // else {
+    //     recovery();
+    // }
+
+    if (distance < 10) {  // STOP
+      stop_motors();
+    }
+    // if (left_val <= threshold && right_val <= threshold && mid_val <= threshold) {
+    //   recovery();
+    // }
 }
