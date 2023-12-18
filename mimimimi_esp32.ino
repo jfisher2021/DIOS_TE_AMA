@@ -146,8 +146,15 @@ void loop() {
       //unsigned long total_time = millis() - TimeStart;
       //end_lap_message(total_time);
       // exit(EXIT_SUCCESS); // Commented out as Arduino sketches don't typically exit
-    }else{
-      distance = receive_buff.toInt();
+    }else if (c== '.'){
+      String strSinPunto = "";
+      for (int i = 0; i < receive_buff.length(); i++) {
+        char caracter = receive_buff.charAt(i);
+        if (caracter != '.') {
+          strSinPunto += caracter;
+        }
+      }
+      distance = strSinPunto.toInt();
     }
   }
 }
