@@ -170,10 +170,10 @@ void setup() {
     distance_thread.setInterval(100);
     distance_thread.onRun(distance_ping);
     controller.add(&distance_thread);
-    temporary_check_thread.enabled = true;
-    temporary_check_thread.setInterval(4000);
-    temporary_check_thread.onRun(ping_time_check);
-    controller.add(&temporary_check_thread);
+    //temporary_check_thread.enabled = true;
+    //temporary_check_thread.setInterval(4000);
+    //temporary_check_thread.onRun(ping_time_check);
+    //controller.add(&temporary_check_thread);
 
     
     // LED
@@ -201,9 +201,6 @@ void setup() {
     Serial.print("{START_LAP}");
     unsigned long time_start = millis();
 
-
-    //xTaskCreate(pid_track, "pid_track", 100, NULL, 2, NULL);
-    //xTaskCreate(distance_ping, "CheckDistance", 100, NULL, 1, NULL);
 }
 
 void loop() {
