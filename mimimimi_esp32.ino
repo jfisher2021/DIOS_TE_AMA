@@ -64,7 +64,7 @@ void publishData(const char* data) {
 
 void start_lap_message() {
   char message[256];
-  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"START_LAP\"}", id_equipo);
+  sprintf(message, "{\n\t\"team_name\": \"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"START_LAP\"\n}", id_equipo);
   publishData(message);
 }
 
