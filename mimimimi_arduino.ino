@@ -1,7 +1,6 @@
 #include "FastLED.h"
 #include <Thread.h>
 #include <ThreadController.h>
-#include <Arduino_FreeRTOS.h>
 
 //--------LED----------
 #define PIN_RBGLED 4
@@ -115,7 +114,6 @@ void stop_motors() {
     b = 255;
     FastLED.showColor(Color(r, g, b));
     motorControl(false, 0, false, 0);
-    Serial.print("{OBSTACLE_DETECTED}");
     Serial.print("{END_LAP}");
 
     while (1)
@@ -141,7 +139,8 @@ void distance_ping() {
 
 void ping_time_check(){
   long time = millis();
-  Serial.print("{PING}" + String(time) + "*");
+  //Serial.print("{PING}" + String(time) + "*");
+  Serial.print("{PING}");
 }
 
 void recovery() {
@@ -177,10 +176,10 @@ void setup() {
     distance_thread.setInterval(100);
     distance_thread.onRun(distance_ping);
     controller.add(&distance_thread);
-    //temporary_check_thread.enabled = true;
-    //temporary_check_thread.setInterval(4000);
-    //temporary_check_thread.onRun(ping_time_check);
-    //controller.add(&temporary_check_thread);
+    temporary_check_thread.enabled = true;
+    temporary_check_thread.setInterval(4000);
+    temporary_check_thread.onRun(ping_time_check);
+    controller.add(&temporary_check_thread);
 
     
     // LED
@@ -241,7 +240,7 @@ void loop() {
     }
 
     if (distance < 10) {  // STOP
-      Serial.print(distance);
+      Serial.print("{OBSTACLE_DETECTED}");
       stop_motors();
     }
 
