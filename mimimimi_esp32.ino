@@ -2,8 +2,8 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 
-const char* ssid = "eduroam";
-const char* password = "Goox0sie_WZCGGh25680000";
+const char* ssid = "LosPollosHermanos";
+const char* password = "tdko9519";
 
 const char* topic = "/SETR/2023/10/";
 const char* id_equipo = "10";
@@ -63,9 +63,9 @@ void start_lap_message() {
   publishData(message);
 }
 
-void end_lap_message(unsigned long total_time) {
+void end_lap_message() {
   char message[256];
-  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"END_LAP\",\"time\":%lu}", id_equipo, total_time);
+  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"END_LAP\",\"time\": 22}", id_equipo);
   publishData(message);
 }
 
@@ -81,9 +81,9 @@ void obstacle_detection_message() {
   publishData(message);
 }
 
-void ping_message(unsigned long lastPingTime) {
+void ping_message() {
   char message[256];
-  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"PING\",\"time\":%lu}", id_equipo, lastPingTime);
+  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"PING\",\"time\":12}", id_equipo);
   publishData(message);
 }
 
