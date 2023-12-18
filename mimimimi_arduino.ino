@@ -115,7 +115,13 @@ void stop_motors() {
     b = 255;
     FastLED.showColor(Color(r, g, b));
     motorControl(false, 0, false, 0);
-    delay(3000);
+    Serial.print("{END_LAP}");
+
+    while (1)
+    {
+        
+    }
+    
 }
 
 void distance_ping() {
@@ -234,7 +240,6 @@ void loop() {
     }
 
     if (distance < 10) {  // STOP
-      Serial.print("{END_LAP}");
       stop_motors();
     }
 
