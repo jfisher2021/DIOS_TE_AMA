@@ -10,6 +10,7 @@ const char* id_equipo = "10";
 
 unsigned long TimeStart = 0;
 unsigned long lastPingTime = 0;
+unsigned long partial_time = 0;
 
 #define RXD2 33
 #define TXD2 4
@@ -70,25 +71,26 @@ void start_lap_message() {
 
 void end_lap_message(unsigned long time) {
   char message[256];
-  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"END_LAP\",\"time\": %ld}", id_equipo,time);
+  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"END_LAP\",\n\t\"time\": %ld\n}", id_equipo,time);
   publishData(message);
 }
 
 void track_loose_message() {
   char message[256];
-  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"LINE_LOST\"}", id_equipo);
+  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"LINE_LOST\"\n}", id_equipo);
   publishData(message);
 }
 
 void obstacle_detection_message() {
   char message[256];
-  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"OBSTACLE_DETECTED\"\"distance\": %d}", id_equipo,distance);
+  //sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"OBSTACLE_DETECTED\"\"distance\": %d/n}", id_equipo,distance);
+  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"OBSTACLE_DETECTED\"\n}", id_equipo);
   publishData(message);
 }
 
-void ping_message() {
+void ping_message(unsigned long time) {
   char message[256];
-  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"PING\",\"time\":12}", id_equipo);
+  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"PING\",\n\t\"time\": %ld\n}", id_equipo,time);
   publishData(message);
 }
 
@@ -116,11 +118,12 @@ void loop() {
       if (!mqtt.connected()) {
         connectToMQTT();
       }
-      
       if (receive_buff == "{CONNECT}"){
         connectToMQTT();
       } else if(receive_buff == "{START_LAP}"){
         start_time = millis();
+        //time for pinging
+        partial_time= millis();
         start_lap_message();
 
       } else if (receive_buff == "{LINE_LOST}"){
@@ -130,32 +133,26 @@ void loop() {
         obstacle_detection_message();
 
       } else if(receive_buff == "{PING}"){  
-        ping_message();
+        if (partial_time >= 4000) {
+          ping_message(lastPingTime);
+          lastPingTime = millis();
+        }
 
       } else if(receive_buff == "{END_LAP}"){
         end_lap_message(millis()-start_time);
       }
       receive_buff="";
 
-      //if (partial_time >= 4000) {
-      //  ping_message(lastPingTime);
-      //  lastPingTime = millis();
-      //}
-
-
-      //unsigned long total_time = millis() - TimeStart;
-      //end_lap_message(total_time);
-      // exit(EXIT_SUCCESS); // Commented out as Arduino sketches don't typically exit
-    }else if (c== '.'){
-      String strSinPunto = "";
-      for (int i = 0; i < receive_buff.length(); i++) {
-        char caracter = receive_buff.charAt(i);
-        if (caracter != '.') {
-          strSinPunto += caracter;
-        }
-      }
-      distance = strSinPunto.toInt();
     }
+    //else if (c== '.'){
+    //   String strSinPunto = "";
+    //  for (int i = 0; i < receive_buff.length(); i++) {
+    //    char caracter = receive_buff.charAt(i);
+    //    if (caracter != '.') {
+    //      strSinPunto += caracter;
+    //    }
+    //  }
+    //  distance = strSinPunto.toInt();
+    //}
   }
-}
 }
