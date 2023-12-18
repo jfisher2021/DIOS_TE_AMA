@@ -241,6 +241,7 @@ void loop() {
     }
 
     if (distance < 10) {  // STOP
+      Serial.print(distance);
       stop_motors();
     }
 
