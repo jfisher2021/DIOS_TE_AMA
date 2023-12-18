@@ -22,6 +22,9 @@ uint16_t MQTT_PORT = 21883;
 WiFiClient client;
 Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_KEY);
 
+
+unsigned long start_time = millis();
+
 void connectToWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid,password);
@@ -63,9 +66,9 @@ void start_lap_message() {
   publishData(message);
 }
 
-void end_lap_message() {
+void end_lap_message(unsigned long time) {
   char message[256];
-  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"END_LAP\",\"time\": 22}", id_equipo);
+  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"END_LAP\",\"time\": %ld}", id_equipo,time);
   publishData(message);
 }
 
@@ -93,7 +96,7 @@ void setup() {
   Serial2.begin(9600,SERIAL_8N1, RXD2, TXD2);
 }
 
-String sendBuff;
+String receive_buff;
 
 void loop() {
   //able to communicate with arduino
@@ -101,7 +104,7 @@ void loop() {
 
     //read from arduino
     char c = Serial2.read();
-    sendBuff += c;
+    receive_buff += c;
 
     if (c == '}'){
 
@@ -112,24 +115,25 @@ void loop() {
         connectToMQTT();
       }
       
-      if (sendBuff == "{CONNECT}"){
+      if (receive_buff == "{CONNECT}"){
         connectToMQTT();
-      } else if(sendBuff == "{START_LAP}"){
+      } else if(receive_buff == "{START_LAP}"){
+        start_time = millis();
         start_lap_message();
 
-      } else if (sendBuff == "{LINE_LOST}"){
+      } else if (receive_buff == "{LINE_LOST}"){
         track_loose_message();
 
-      } else if (sendBuff == "{OBSTACLE_DETECTED}"){
+      } else if (receive_buff == "{OBSTACLE_DETECTED}"){
         obstacle_detection_message();
 
-      } else if(sendBuff == "{PING}"){  
+      } else if(receive_buff == "{PING}"){  
         ping_message();
 
-      } else if(sendBuff == "{END_LAP}"){
-        end_lap_message();
+      } else if(receive_buff == "{END_LAP}"){
+        end_lap_message(millis()-start_time);
       }
-      sendBuff="";
+      receive_buff="";
 
       //if (partial_time >= 4000) {
       //  ping_message(lastPingTime);
