@@ -24,6 +24,8 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_K
 
 
 unsigned long start_time = millis();
+int distance;
+
 
 void connectToWiFi() {
   WiFi.mode(WIFI_STA);
@@ -80,7 +82,7 @@ void track_loose_message() {
 
 void obstacle_detection_message() {
   char message[256];
-  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"OBSTACLE_DETECTED\"}", id_equipo);
+  sprintf(message, "{\"team_name\":\"DIOS_TE_AMA\",\"id\":\"%s\",\"action\":\"OBSTACLE_DETECTED\"\"distance\": %d}", id_equipo,distance);
   publishData(message);
 }
 
@@ -144,6 +146,9 @@ void loop() {
       //unsigned long total_time = millis() - TimeStart;
       //end_lap_message(total_time);
       // exit(EXIT_SUCCESS); // Commented out as Arduino sketches don't typically exit
+    }else{
+      distance = receive_buff.toInt();
     }
   }
+}
 }
