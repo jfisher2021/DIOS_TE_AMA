@@ -52,10 +52,12 @@ const int threshold = 500;  // 700
 const int i_show_speed_angular = 120;
 //-----------------------------
 
-int left_val, right_val, mid_val, error, derivativo, error_anterior, velocidad;
+int left_val, right_val, mid_val, error, derivativo, error_anterior, velocidad, anterior;
 long distance;
 Thread temporary_check_thread = Thread();
 ThreadController controller = ThreadController();
+Thread distance_thread = Thread();
+
 
 uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
     return (((uint32_t)r << 16) | ((uint32_t)g << 8) | b);
@@ -73,9 +75,9 @@ void motorControl(bool motorAForward, int speedA, bool motorBForward, int speedB
 }
 
 void sensorReading() {
-    //left_val = analogRead(A2);  // read from left Sensor
+    left_val = analogRead(A2);  // read from left Sensor
     right_val = analogRead(A0);
-    //mid_val = analogRead(A1);
+    mid_val = analogRead(A1);
 }
 
 void turnLeft(int vel_left) {
@@ -135,6 +137,14 @@ void ping_time_check(){
   Serial.print("{PING}" + String(time) + "*");
 }
 
+void recovery() {
+
+  if (anterior == 1) {
+    motorControl(false, 0, true, i_show_speed_angular * 1.5);
+  } else if (anterior == 2) {
+    motorControl(true, i_show_speed_angular * 1.5, false, 0);
+  }
+}
 
 void setup() {
     // ultrasonidos
@@ -155,11 +165,11 @@ void setup() {
     pinMode(PIN_Motor_BIN_1, OUTPUT);
     pinMode(PIN_Motor_PWMB, OUTPUT);
 
-    //Thread
-    //distance_thread.enabled = true;
-    //distance_thread.setInterval(100);
-    //distance_thread.onRun(ping);
-    //controller.add(&distance_thread);
+    
+    distance_thread.enabled = true;
+    distance_thread.setInterval(100);
+    distance_thread.onRun(distance_ping);
+    controller.add(&distance_thread);
     temporary_check_thread.enabled = true;
     temporary_check_thread.setInterval(4000);
     temporary_check_thread.onRun(ping_time_check);
@@ -206,9 +216,11 @@ void loop() {
     error_anterior = error;
 
     if (right_val >= threshold) {  // RIGHT
+        anterior = 1;
         turnRight(velocidad);
 
     } else if (left_val >= threshold) {  // LEFT
+        anterior = 2;
         turnLeft(velocidad);
 
     } else if (mid_val >= threshold) {  // FORWARD
@@ -220,15 +232,12 @@ void loop() {
         b = 0;
 
         FastLED.showColor(Color(r, g, b));
+        recovery();
+
     }
-    // else {
-    //     recovery();
-    // }
 
     if (distance < 10) {  // STOP
       stop_motors();
     }
-    // if (left_val <= threshold && right_val <= threshold && mid_val <= threshold) {
-    //   recovery();
-    // }
+
 }
