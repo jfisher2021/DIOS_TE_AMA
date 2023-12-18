@@ -237,6 +237,7 @@ void loop() {
     }
 
     if (distance < 10) {  // STOP
+      Serial.print("{END_LAP}");
       stop_motors();
     }
 
