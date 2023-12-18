@@ -115,6 +115,7 @@ void stop_motors() {
     b = 255;
     FastLED.showColor(Color(r, g, b));
     motorControl(false, 0, false, 0);
+    Serial.print("{OBSTACLE_DETECTED}");
     Serial.print("{END_LAP}");
 
     while (1)
