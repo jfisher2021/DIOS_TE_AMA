@@ -57,6 +57,7 @@ Thread temporary_check_thread = Thread();
 ThreadController controller = ThreadController();
 Thread distance_thread = Thread();
 
+unsigned int start_time;
 
 uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
     return (((uint32_t)r << 16) | ((uint32_t)g << 8) | b);
@@ -205,7 +206,8 @@ void setup() {
       }
     }
     Serial.print("{START_LAP}");
-    unsigned long time_start = millis();
+    start_time = millis();
+
 
 }
 
@@ -240,6 +242,7 @@ void loop() {
     }
 
     if (distance < 10) {  // STOP
+      //Serial.print(distance);
       Serial.print("{OBSTACLE_DETECTED}");
       stop_motors();
     }
