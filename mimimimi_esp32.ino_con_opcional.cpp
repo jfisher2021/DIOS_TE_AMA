@@ -25,7 +25,7 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_K
 
 
 unsigned long start_time = millis();
-int distance;
+int dist;
 
 
 void connectToWiFi() {
@@ -83,26 +83,14 @@ void track_loose_message() {
 
 void obstacle_detection_message() {
   char message[256];
-  //sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"OBSTACLE_DETECTED\"\"distance\": %d/n}", id_equipo,distance);
-  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"OBSTACLE_DETECTED\"\n}", id_equipo);
+  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"OBSTACLE_DETECTED\"\"distance\": %d\n}", id_equipo,dist);
+  //sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"OBSTACLE_DETECTED\"\n}", id_equipo);
   publishData(message);
 }
 
 void ping_message(unsigned long time) {
   char message[256];
   sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"PING\",\n\t\"time\": %ld\n}", id_equipo,time);
-  publishData(message);
-}
-
-void searching_line_message() {
-  char message[256];
-  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"SEARCHING_LINE\"\n}", id_equipo);
-  publishData(message);
-}
-
-void line_found() {
-  char message[256];
-  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"LINE_FOUND\"\n}", id_equipo);
   publishData(message);
 }
 
@@ -145,34 +133,25 @@ void loop() {
         obstacle_detection_message();
 
       } else if(receive_buff == "{PING}"){  
-        if (partial_time >= 4000) {
-          ping_message(lastPingTime);
-          lastPingTime = millis();
-        }
+        ping_message(millis()-start_time);
 
       } else if(receive_buff == "{END_LAP}"){
         end_lap_message(millis()-start_time);
       }
-      else if (receive_buff == "{SEARCHING_LINE}"){
-        searching_line_message();
-      }
-      else if (receive_buff == "{LINE_FOUND}")
-      {
-        line_found();
-      }
-      
       receive_buff="";
 
     }
-    //else if (c== '.'){
-    //   String strSinPunto = "";
-    //  for (int i = 0; i < receive_buff.length(); i++) {
-    //    char caracter = receive_buff.charAt(i);
-    //    if (caracter != '.') {
-    //      strSinPunto += caracter;
-    //    }
-    //  }
-    //  distance = strSinPunto.toInt();
+    //if (c == '.'){
+      // Buscamos el carácter de nueva línea y lo reemplazamos por el carácter nulo
+      //for (int i = 0; receive_buff[i] != '\0'; i++) {
+          //if (receive_buff[i] == '.') {
+              //receive_buff[i] = '\0';
+              //break; // Terminamos el bucle al encontrar la primera nueva línea
+          //}
+      //}
+      //dist = receive_buff.toInt();
     //}
+    //char c = Serial2.readStringUntil('\n');
+    
   }
 }
