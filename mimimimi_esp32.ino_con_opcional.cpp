@@ -100,6 +100,12 @@ void searching_line_message() {
   publishData(message);
 }
 
+void line_found() {
+  char message[256];
+  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"LINE_FOUND\"\n}", id_equipo);
+  publishData(message);
+}
+
 void setup() {
   Serial.begin(9600);
   //Ardiuino
@@ -147,6 +153,14 @@ void loop() {
       } else if(receive_buff == "{END_LAP}"){
         end_lap_message(millis()-start_time);
       }
+      else if (receive_buff == "{SEARCHING_LINE}"){
+        searching_line_message();
+      }
+      else if (receive_buff == "{LINE_FOUND}")
+      {
+        line_found();
+      }
+      
       receive_buff="";
 
     }
