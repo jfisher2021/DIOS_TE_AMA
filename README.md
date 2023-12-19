@@ -1,63 +1,99 @@
 # DIOS_TE_AMA
 
-No creo q por cambiar el readme de error
-#include <WiFi.h>
-#include "Adafruit_MQTT.h"
-#include "Adafruit_MQTT_Client.h"
+## FOLLOW LINE
 
-#define WIFI_SSID       "LosPollosHermanos"
-#define WIFI_PASS       "tdko9519"
+# Índice
 
-#define MQTT_SERVER     "io.adafruit.com"
-#define MQTT_PORT       1883
-#define MQTT_USERNAME   "Dios_te_ama"
-#define MQTT_KEY        "33"
+1. [Descripción](#Descripción-del-Proyecto)
+4. [Componentes Necesarios](#Componentes-Necesarios)
+   4.1. [Ultrasonido](#ultrasonido)
+   4.2. [Sensor Infra-rojo](#sensor-infra-rojo)
+   4.3. [Motores](#motores)
+   4.4. [LED](#led)
+5. [ESP32](#esp32)
+   5.1. [Arduino-IDE y librerías](#arduino-ide-y-librerías)
+   5.2. [Comprobar la conexión WiFi](#comprobar-la-conexión-wifi)
+6. [Comunicación Serie](#comunicación-serie)
+7. [Comunicación IoT](#comunicación-iot)
+   7.1. [MQTT](#mqtt)
 
-WiFiClient client;
-Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_KEY);
+### Descripción del Proyecto
 
-Adafruit_MQTT_Publish   myFeed = Adafruit_MQTT_Publish(&mqtt, MQTT_USERNAME "/feeds/myfeed");
+Este proyecto utiliza un robot equipado con sensores infrarrojos para seguir una línea negra trazada en el suelo. El robot incluye un modelo ESP32 CAM, que nos permite comunicarnos a través de cualquier red WiFi. Una vez comunicados con la wifi podemos enviar los datos de los sensores a un servidor MQTT, que nos permitirá visualizar los datos en tiempo real.
 
+### Componentes Necesarios
 
-void connectToWiFi() {
-  // Connect to Wi-Fi
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi...");
+Para este proyecto, necesitarás los siguientes componentes:
+
+  - ELEGOO Smart Robot Car V4.0 with Camera
+  - Placa ESP32
+  - Batería o fuente de alimentación para el coche y la ESP32
+  - Cables para conectar los componentes (uno usb-C para la ESP32)
+
+## PRIMEROS PASOS CON EL ROBOT
+
+### SEGUIR LINEA 
+
+Lo prrimero que hizimos es probar y entender el codigo de pruba que nos proporcionaste en el git de la asignatura. Estubimos tanteando con el sensor infrarrojo y viendo como funcionaba. Al ser analogico nos dava valores de entre 0 y 1023, siendo 0 cuando es mas blanco y 1023 cuando es mas negro.
+
+```c++
+#define PIN_ITR20001-LEFT   A2
+#define PIN_ITR20001-MIDDLE A1
+#define PIN_ITR20001-RIGHT  A0
+```
+
+###### PID 
+
+Despues de bastantes codigos de prueba nos dimos cuenta de que la mejor opcion para que siguiera la linea era meter un PID. La idea principal era calcular el error entre el valor Left y el valor Rigth de los sensores. Cuando tenemos ese error ya podemos ir variando la velocidad de giro para seguir la linea. Una vez entendido esto nos pusimos a programar. 
+En nuestro caso usamos un PD ya que la I no afecta mucho al no llegar al estado permanente el suficiente tiempo como para variar el giro.
+
+```c++
+    error = abs(left_val - right_val);
+    derivativo = error - error_anterior;
+    velocidad = KP * error + KD * derivativo;
+    error_anterior = error;
+```
+Para hallar los valores de Kp y Kd y no morir en el intento, razonamos mas o menos los valores que nos deberia de dar. El error oscilaba entre 700 y 800, por lo tanto los valores tendrian que estar entre 0.5 y 0.1 aprox ya que la velocidad optima esta entre 100 y 255.
+
+Una vez razonado esto, nos pusimos a probar y a ajustar los valores hasta que el robot siguiera la linea. Despues de casi 1 hora de probar valores dimos con unos valores que funcionaban bastante bien. 
+
+```c++
+#define KP 0.245
+#define KD 0.32
+```
+
+##### PROBLEMAS
+Ya tenemos la velocidad de giro para seguir la linea, PERO, hay un GRAN PROBLEMA, cuando el robot pierde la linea gira muy poco o peor, se queda quieto. Pero ¿Por qué?
+Esto se debe a que cuando se sale de la linea tanto el valor Right o Left nos da valores de entre 0 y 50 aprox por lo tanto el error es muy pequeño y la velocidad de giro tambien. Nosotros somos (futuros) ingenieros, a los ingenieros nos gusta solucionar problemas, por lo tanto, nos pusimos a pensar como solucionar este problema. 
+
+##### SOLUCIONES
+
+###### recovery()
+
+La solucion fue muy secilla al igual que ingeniosa (o eso creemos). Lo que hicimos fue crear una funcion que se encargara de recuperar el robot cuando se saliera de la linea. Esta funcion lo que hace es girar el robot hasta que vuelva a encontrar la linea. Para ello lo que hicimos fue que cuando los 3 sensores dieran valores por debajo de un umbral se llamara a la funcion recovery(). 
+
+- PRIEMER INTENTO
+
+Nos creamos una variable global para saber por que lado se salio de la linea y asi poder girar en el sentido contrario. (Si se sale por la derecha girar a la izquierda y viceversa). Parece que esta solucion es super buena y brillante pero cuando la probamos nos dimos cuenta de que no era tan buena como parecia. Nos dimos cuenta de que el robot no se perdia por girrar mucho y por lo tanto girar en ell sentido inverso como la loica podria indicar. El robot se perdia por girar poco y por lo tanto girar en el sentido inverso no era la solucion.
+
+- SEGUNDO INTENTO Y DEFINITIVO
+
+Una vez entendido lo que pasaba simplemente cambiamos el sentido de giro y listo. PAra ello ponemos una velocidad mayor que la de el PD para uqe gire rapido y encuentre la linea. 
+
+```c++
+void recovery() {
+
+  if (anterior == 1) {
+    motorControl(false, 0, true, i_show_speed_angular * 1.5);
+  } else if (anterior == 2) {
+    motorControl(true, i_show_speed_angular * 1.5, false, 0);
   }
-  Serial.println("Connected to WiFi");
 }
+```
 
-void connectToMQTT() {
-  // Connect to MQTT Broker
-  while (!mqtt.connected()) {
-    Serial.println("Connecting to MQTT...");
-    if (mqtt.connect()) {
-      Serial.println("Connected to MQTT");
-    } else {
-      Serial.println("Failed to connect to MQTT, retrying in 5 seconds...");
-      delay(5000);
-    }
-  }
-}
-// Publish data to MQTT feed
-void publishData(const char* data) {
-  if (myFeed.publish(data)) {
-    Serial.println("Data published to MQTT");
-  } else {
-    Serial.println("Failed to publish data");
-  }
-}
+#####
 
 
 
-void setup() {
-  Serial.begin(115200);
-  connectToWiFi();
-}
 
-void loop() {
-  connectToMQTT();
-  publishData("Hello, MQTT!");
-}
+
