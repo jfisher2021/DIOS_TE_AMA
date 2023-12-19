@@ -1,7 +1,6 @@
+#include "FastLED.h"
 #include <Thread.h>
 #include <ThreadController.h>
-
-#include "FastLED.h"
 
 //--------LED----------
 #define PIN_RBGLED 4
@@ -49,10 +48,10 @@ const int threshold = 500;  // 700
 #define PIN_Motor_BIN_1 8
 // PIN_Motor_PWMB: Analog output [0-255]. It provides speed.
 #define PIN_Motor_PWMB 6
+
+#define SPEED_LINEAR 130 //180
 // aqui tenia 120
-#define SPEED_LINEAR 180
-// aqui tenia 120
-const int i_show_speed_angular = 150;
+const int i_show_speed_angular = 120; //150
 //-----------------------------
 
 int left_val, right_val, mid_val, error, derivativo, error_anterior, velocidad, anterior;
@@ -60,6 +59,8 @@ long distance;
 Thread temporary_check_thread = Thread();
 ThreadController controller = ThreadController();
 Thread distance_thread = Thread();
+
+unsigned int start_time;
 
 uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
     return (((uint32_t)r << 16) | ((uint32_t)g << 8) | b);
@@ -119,8 +120,11 @@ void stop_motors() {
     motorControl(false, 0, false, 0);
     Serial.print("{END_LAP}");
 
-    while (1) {
+    while (1)
+    {
+        
     }
+    
 }
 
 void distance_ping() {
@@ -137,10 +141,10 @@ void distance_ping() {
     distance = duration * 10 / 292 / 2;  // convertimos a distancia, en cm
 }
 
-void ping_time_check() {
-    long time = millis();
-    // Serial.print("{PING}" + String(time) + "*");
-    Serial.print("{PING}");
+void ping_time_check(){
+  long time = millis();
+  //Serial.print("{PING}" + String(time) + "*");
+  Serial.print("{PING}");
 }
 
 void recovery() {
@@ -184,6 +188,7 @@ void setup() {
     pinMode(PIN_Motor_BIN_1, OUTPUT);
     pinMode(PIN_Motor_PWMB, OUTPUT);
 
+    
     distance_thread.enabled = true;
     distance_thread.setInterval(100);
     distance_thread.onRun(distance_ping);
@@ -193,6 +198,7 @@ void setup() {
     temporary_check_thread.onRun(ping_time_check);
     controller.add(&temporary_check_thread);
 
+    
     // LED
     FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
     FastLED.setBrightness(20);
@@ -203,20 +209,22 @@ void setup() {
 
     Serial.print("{CONNECT}");
 
-    while (1) {
-        if (Serial.available()) {
-            char c = Serial.read();
-            sendBuff += c;
-            if (c == '}') {
-                if (sendBuff == "{CONNECTED}") {
-                    break;
-                }
-                sendBuff = "";
-            }
-        }
+    while(1) {
+      if (Serial.available()) {
+        char c = Serial.read();
+        sendBuff += c;
+        if (c == '}')  {            
+          if(sendBuff == "{CONNECTED}"){
+            break;
+          }
+          sendBuff = "";
+        } 
+      }
     }
     Serial.print("{START_LAP}");
-    unsigned long time_start = millis();
+    start_time = millis();
+
+
 }
 
 void loop() {
@@ -229,21 +237,18 @@ void loop() {
     error_anterior = error;
 
     if (right_val >= threshold) {  // RIGHT
-
         anterior = 1;
         turnRight(velocidad);
 
     } else if (left_val >= threshold) {  // LEFT
-        line();
         anterior = 2;
         turnLeft(velocidad);
 
     } else if (mid_val >= threshold) {  // FORWARD
-        line();
         // tenia 100 y va bien
         forward(SPEED_LINEAR);
     } else {
-        if (first_time) {
+      if (first_time) {
             first_time = false;
             lost_line = true;   
 
@@ -256,12 +261,16 @@ void loop() {
         r = 255;
         g = 0;
         b = 0;
+
         FastLED.showColor(Color(r, g, b));
         recovery();
+
     }
 
     if (distance < 10) {  // STOP
-        Serial.print("{OBSTACLE_DETECTED}");
-        stop_motors();
+      //Serial.print(distance);
+      Serial.print("{OBSTACLE_DETECTED}");
+      stop_motors();
     }
+
 }
