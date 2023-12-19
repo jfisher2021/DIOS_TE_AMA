@@ -118,7 +118,7 @@ void stop_motors() {
     b = 255;
     FastLED.showColor(Color(r, g, b));
     motorControl(false, 0, false, 0);
-    Serial.print("{END_LAP}");
+    Serial.print("{{END_LAP}");
 
     while (1)
     {
@@ -268,8 +268,9 @@ void loop() {
     }
 
     if (distance < 10) {  // STOP
-      //Serial.print(distance);
+      //
       Serial.print("{OBSTACLE_DETECTED}");
+      Serial.print(distance);
       stop_motors();
     }
 
