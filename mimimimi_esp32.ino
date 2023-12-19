@@ -83,7 +83,7 @@ void track_loose_message() {
 
 void obstacle_detection_message() {
   char message[256];
-  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"OBSTACLE_DETECTED\"\"distance\": %d/n}", id_equipo,dist);
+  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"OBSTACLE_DETECTED\"\"distance\": %d\n}", id_equipo,dist);
   //sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"OBSTACLE_DETECTED\"\n}", id_equipo);
   publishData(message);
 }
@@ -140,20 +140,18 @@ void loop() {
       }
       receive_buff="";
 
-    }else{
-      dist = receive_buff.toInt();
     }
+    //if (c == '.'){
+      // Buscamos el carácter de nueva línea y lo reemplazamos por el carácter nulo
+      //for (int i = 0; receive_buff[i] != '\0'; i++) {
+          //if (receive_buff[i] == '.') {
+              //receive_buff[i] = '\0';
+              //break; // Terminamos el bucle al encontrar la primera nueva línea
+          //}
+      //}
+      //dist = receive_buff.toInt();
+    //}
     //char c = Serial2.readStringUntil('\n');
     
-    //else if (c== '.'){
-    //   String strSinPunto = "";
-    //  for (int i = 0; i < receive_buff.length(); i++) {
-    //    char caracter = receive_buff.charAt(i);
-    //    if (caracter != '.') {
-    //      strSinPunto += caracter;
-    //    }
-    //  }
-    //  distance = strSinPunto.toInt();
-    //}
   }
 }
