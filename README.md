@@ -34,7 +34,7 @@ Para este proyecto, necesitarás los siguientes componentes:
 
 ### SEGUIR LINEA 
 
-Lo prrimero que hizimos es probar y entender el codigo de pruba que nos proporcionaste en el git de la asignatura. Estubimos tanteando con el sensor infrarrojo y viendo como funcionaba. Al ser analogico nos dava valores de entre 0 y 1023, siendo 0 cuando es mas blanco y 1023 cuando es mas negro.
+Lo primero que hicimos fue probar y entender el codigo de prueba proporcionado en el git de la asignatura. Estuvimos tanteando con el sensor infrarrojo y viendo como funcionaba. Al ser analogico nos daba valores de entre 0 y 1023, siendo 0 cuando  más oscuro y 1023 cuando más claro.
 
 ```c++
 #define PIN_ITR20001-LEFT   A2
@@ -44,7 +44,7 @@ Lo prrimero que hizimos es probar y entender el codigo de pruba que nos proporci
 
 ###### PID 
 
-Despues de bastantes codigos de prueba nos dimos cuenta de que la mejor opcion para que siguiera la linea era meter un PID. La idea principal era calcular el error entre el valor Left y el valor Rigth de los sensores. Cuando tenemos ese error ya podemos ir variando la velocidad de giro para seguir la linea. Una vez entendido esto nos pusimos a programar. 
+Despues de bastantes codigos de prueba, nos dimos cuenta de que la mejor opción para que siguiera la linea sería emplear un PID. La idea principal era calcular el error entre el valor Left y el valor Rigth de los sensores. Una vez obtenido ese error ya podemos ir variando la velocidad de giro para seguir la linea. Entendido esto, nos pusimos a programar. 
 En nuestro caso usamos un PD ya que la I no afecta mucho al no llegar al estado permanente el suficiente tiempo como para variar el giro.
 
 ```c++
@@ -53,7 +53,7 @@ En nuestro caso usamos un PD ya que la I no afecta mucho al no llegar al estado 
     velocidad = KP * error + KD * derivativo;
     error_anterior = error;
 ```
-Para hallar los valores de Kp y Kd y no morir en el intento, razonamos mas o menos los valores que nos deberia de dar. El error oscilaba entre 700 y 800, por lo tanto los valores tendrian que estar entre 0.5 y 0.1 aprox ya que la velocidad optima esta entre 100 y 255.
+Para hallar los valores de Kp y Kd y no morir en el intento, razonamos mas o menos los valores que nos debería de dar. El error oscilaba entre 700 y 800, por lo tanto los valores tendrian que estar entre 0.5 y 0.1 aprox ya que la velocidad optima esta entre 100 y 255.
 
 Una vez razonado esto, nos pusimos a probar y a ajustar los valores hasta que el robot siguiera la linea. Despues de casi 1 hora de probar valores dimos con unos valores que funcionaban bastante bien. 
 
@@ -72,7 +72,7 @@ Esto se debe a que cuando se sale de la linea tanto el valor Right o Left nos da
 
 La solucion fue muy secilla al igual que ingeniosa (o eso creemos). Lo que hicimos fue crear una funcion que se encargara de recuperar el robot cuando se saliera de la linea. Esta funcion lo que hace es girar el robot hasta que vuelva a encontrar la linea. Para ello lo que hicimos fue que cuando los 3 sensores dieran valores por debajo de un umbral se llamara a la funcion recovery(). 
 
-- PRIEMER INTENTO
+- PRIMER INTENTO
 
 Nos creamos una variable global para saber por que lado se salio de la linea y asi poder girar en el sentido contrario. (Si se sale por la derecha girar a la izquierda y viceversa). Parece que esta solucion es super buena y brillante pero cuando la probamos nos dimos cuenta de que no era tan buena como parecia. Nos dimos cuenta de que el robot no se perdia por girrar mucho y por lo tanto girar en ell sentido inverso como la loica podria indicar. El robot se perdia por girar poco y por lo tanto girar en el sentido inverso no era la solucion.
 
@@ -91,9 +91,57 @@ void recovery() {
 }
 ```
 
-#####
+### esp32
+
+Respecto a la ESP32, se ha implementado de tal manera que se comunicará con el Arduino mediante la 'SerialCommunication'. Se han proporcionado muchos códgios al respecto en la wiki de la asignatura, de los cuales hemos obtenido el 'esqueleto' de nuestra implementación. 
+A la hora de comunicarse entre la ESP32 y Arduino Uno en nuestro código, en la función setup() nos encontramos con la inicialización de la comunicación entre sí:
+```c++
+Serial2.begin(9600,SERIAL_8N1, RXD2, TXD2);
+```
+Para que más tarde de forma periódica en la función loop(), se pueda definir que una vez que empiece la comunicación, se almacene la información en un buffer y en base a esta información almacenada, se puedan efectuar unas accione u otras:
+```c++
+  if (Serial2.available()) {
+    char c = Serial2.read();
+    receive_buff += c;
+  }
+```
+Para rellenar el buffer, nuestra manera de enviar mensajes y de recibirlos es introduciendo los mensajes entre corchetes.
 
 
+Para el envío de mensajes y para la publicación de estos, se implementará WIFI y MQTT. También se han utilizado los códigos que encontramos en la wiki de la asignatura, por lo que para la wifi empleamos la librería <WiFi.h> y para el MQTT empleamos la librería de Adafruit.
 
+Nuestro código en la ESP32 tiene la siguiente estructura:
+Una vez conectado a la WIFI y a MQTT de forma correcta, el arduino mandará mensajes a la ESP, la cual leerá de forma iterada y según el mensaje recibido, actuará de una manera u otra: 
+```c++
+if(receive_buff == "{SP}"){
+        start_lap_message();
+}
+```
+Este snippet de código hace referencia a que dependiendo del mensaje que le llegue a la ESP, el código entrará en uno de los condicionales y realizará la acción que se le indique. Se utilizará una función distinta para cada tipo de mensaje. En el caso de recibir "{SP}", como en el snippet anterior, se llamrá a la función start_lap_message() que creará el mensaje de inicio de vuelta y llamará a la función 'publish()' para publicarlo:
+```c++
+void start_lap_message() {
+  char message[256];
+  sprintf(message, "{\n\t\"team_name\": \"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"START_LAP\"\n}", id_equipo);
+  publishData(message);
+}
+```
 
+Además se han implementado Arduino Threads para simplificar algunas tareas en esta práctica. Para ello implementamos las librerías de <Thread.h>
+y <ThreadController.h>. Definimos los threads de la siguiente manera: 
+```c++
+Thread temporary_check_thread = Thread();
+Thread distance_thread = Thread();
+ThreadController controller = ThreadController();
+```
+Se implementan 2 Threads y se utiliza un controlador. El Thread 'temporary_check_thread' es el que nos servirá de ayuda para el mensaje de 'PING', ya que el thread nos mide el tiempo cada 4 segundos, como se requiere en la práctica. El otro thread 'distance_thread' se emplea para controlar la distancia mediante el sensor de ultrasonidos de forma continuada. En la función setup() se inicializan de la siguiente manera: 
+```c++
+distance_thread.enabled = true;
+ distance_thread.setInterval(100);
+ distance_thread.onRun(distance_ping);
+ controller.add(&distance_thread);
 
+ temporary_check_thread.enabled = true;
+ temporary_check_thread.setInterval(4000);
+ temporary_check_thread.onRun(ping_time_check);
+ controller.add(&temporary_check_thread);
+```
