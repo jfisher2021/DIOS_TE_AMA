@@ -25,9 +25,10 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_K
 
 unsigned long start_time = millis();
 unsigned long final_time;
-int dintance = 0;
+int dintance = 0, time_ping = 0;
 String dist = "";
 String final_time_str = "";
+String time_ping_str = "";
 
 void connectToWiFi()
 {
@@ -107,6 +108,12 @@ void ping_message(unsigned long time)
   sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"PING\",\n\t\"time\": %ld\n}", id_equipo, time);
   publishData(message);
 }
+void found_line_message()
+{
+  char message[256];
+  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"LINE_FOUND\"\n}", id_equipo);
+  publishData(message);
+}
 
 void search()
 {
@@ -168,7 +175,9 @@ void loop()
       }
       else if (receive_buff == "{PG}")
       {
-        ping_message(millis() - start_time);
+        time_ping_str = Serial2.readStringUntil('{');
+        time_ping = time_ping_str.toInt();
+        ping_message(time_ping);
       }
       else if (receive_buff == "{EL}")
       {
@@ -176,6 +185,10 @@ void loop()
         final_time = final_time_str.toInt();
 
         end_lap_message(final_time);
+      }
+      else if (receive_buff == "{FL}")
+      {
+        found_line_message();
       }
       receive_buff = "";
     }

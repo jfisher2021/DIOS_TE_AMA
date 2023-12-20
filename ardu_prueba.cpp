@@ -28,7 +28,7 @@ bool first_time = true;
 
 // Umbral de detección de línea
 // Negro 1024 y blanco 0 va entre esos valores
-const int threshold = 500;  // 700
+const int threshold = 500; // 700
 
 //-------Motor------------------
 // Enable/Disable motor control.
@@ -48,25 +48,27 @@ const int threshold = 500;  // 700
 // PIN_Motor_PWMB: Analog output [0-255]. It provides speed.
 #define PIN_Motor_PWMB 6
 
-#define SPEED_LINEAR 180 //180
+#define SPEED_LINEAR 180 // 180
 // aqui tenia 120
-const int i_show_speed_angular = 150; //150
+const int i_show_speed_angular = 150; // 150
 //-----------------------------
 
-int left_val, right_val, mid_val, error, derivativo, error_anterior, velocidad, anterior;
+int left_val, right_val, mid_valost_linel, error, derivativo, error_anterior, velocidad, anterior;
 long distance;
 Thread temporary_check_thread = Thread();
 ThreadController controller = ThreadController();
 Thread distance_thread = Thread();
 
-unsigned int start_time, final_time;
+unsigned int start_time, final_time, time;
 
-uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
+uint32_t Color(uint8_t r, uint8_t g, uint8_t b)
+{
     return (((uint32_t)r << 16) | ((uint32_t)g << 8) | b);
 }
 
 // Function to control motors
-void motorControl(bool motorAForward, int speedA, bool motorBForward, int speedB) {
+void motorControl(bool motorAForward, int speedA, bool motorBForward, int speedB)
+{
     // Control motor A (RIGHT)
     digitalWrite(PIN_Motor_AIN_1, motorAForward ? HIGH : LOW);
     analogWrite(PIN_Motor_PWMA, speedA);
@@ -76,13 +78,15 @@ void motorControl(bool motorAForward, int speedA, bool motorBForward, int speedB
     analogWrite(PIN_Motor_PWMB, speedB);
 }
 
-void sensorReading() {
-    left_val = analogRead(A2);  // read from left Sensor
+void sensorReading()
+{
+    left_val = analogRead(A2); // read from left Sensor
     right_val = analogRead(A0);
     mid_val = analogRead(A1);
 }
 
-void turnLeft(int vel_left) {
+void turnLeft(int vel_left)
+{
     // LED RED
     r = 0;
     g = 255;
@@ -91,7 +95,8 @@ void turnLeft(int vel_left) {
     // move
     motorControl(true, vel_left, true, vel_left / 3);
 }
-void turnRight(int vel_rigth) {
+void turnRight(int vel_rigth)
+{
     // LED RED
     r = 0;
     g = 255;
@@ -100,7 +105,8 @@ void turnRight(int vel_rigth) {
     // move
     motorControl(true, vel_rigth / 3, true, vel_rigth);
 }
-void forward(int speed) {
+void forward(int speed)
+{
     // LED GREEN
     r = 0;
     g = 255;
@@ -110,7 +116,8 @@ void forward(int speed) {
     motorControl(true, speed, true, speed);
 }
 
-void stop_motors() {
+void stop_motors()
+{
     // LED Blue
     r = 0;
     g = 0;
@@ -121,54 +128,51 @@ void stop_motors() {
     Serial.print(final_time);
     while (1)
     {
-        
     }
-    
 }
 
-void distance_ping() {
+void distance_ping()
+{
     long duration;
 
-    digitalWrite(TRIG_PIN, LOW);  // para generar un pulso limpio ponemos a LOW 4us
+    digitalWrite(TRIG_PIN, LOW); // para generar un pulso limpio ponemos a LOW 4us
     delayMicroseconds(4);
-    digitalWrite(TRIG_PIN, HIGH);  // generamos Trigger (disparo) de 10us
+    digitalWrite(TRIG_PIN, HIGH); // generamos Trigger (disparo) de 10us
     delayMicroseconds(10);
     digitalWrite(TRIG_PIN, LOW);
 
-    duration = pulseIn(ECHO_PIN, HIGH);  // medimos el tiempo entre pulsos, en microsegundos
+    duration = pulseIn(ECHO_PIN, HIGH); // medimos el tiempo entre pulsos, en microsegundos
 
-    distance = duration * 10 / 292 / 2;  // convertimos a distancia, en cm
+    distance = duration * 10 / 292 / 2; // convertimos a distancia, en cm
 }
 
-void ping_time_check(){
-  long time = millis();
-  //Serial.print("{PING}" + String(time) + "*");
-  Serial.print("{PG}");
+void ping_time_check()
+{
+    time = millis() - start_time;
+    Serial.print("{PG}");
+    Serial.print(time);
 }
 
-void recovery() {
+void recovery()
+{
     // if (recovery_line) {
     //     Serial.print("{SE}");
     //     recovery_line = false;
     //     found_line = true;
     // }
 
-    if (anterior == 1) {
+    if (anterior == 1)
+    {
         motorControl(false, 0, true, i_show_speed_angular * 1.5);
-    } else if (anterior == 2) {
+    }
+    else if (anterior == 2)
+    {
         motorControl(true, i_show_speed_angular * 1.5, false, 0);
     }
 }
 
-void line() {
-    if (found_line) {
-        Serial.print("{LF}");
-        found_line = false;
-        lost_line = true;
-    }
-}
-
-void setup() {
+void setup()
+{
     // ultrasonidos
     pinMode(TRIG_PIN, OUTPUT);
     pinMode(ECHO_PIN, INPUT);
@@ -187,7 +191,6 @@ void setup() {
     pinMode(PIN_Motor_BIN_1, OUTPUT);
     pinMode(PIN_Motor_PWMB, OUTPUT);
 
-    
     distance_thread.enabled = true;
     distance_thread.setInterval(100);
     distance_thread.onRun(distance_ping);
@@ -197,36 +200,38 @@ void setup() {
     temporary_check_thread.onRun(ping_time_check);
     controller.add(&temporary_check_thread);
 
-    
     // LED
     FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
     FastLED.setBrightness(20);
 
-    Serial.begin(9600);  // // Serial Communication is starting with 9600 of baudrate speed
+    Serial.begin(9600); // // Serial Communication is starting with 9600 of baudrate speed
 
     String sendBuff;
 
     Serial.print("{CONNECT}");
 
-    while(1) {
-      if (Serial.available()) {
-        char c = Serial.read();
-        sendBuff += c;
-        if (c == '}')  {            
-          if(sendBuff == "{CONNECTED}"){
-            break;
-          }
-          sendBuff = "";
-        } 
-      }
+    while (1)
+    {
+        if (Serial.available())
+        {
+            char c = Serial.read();
+            sendBuff += c;
+            if (c == '}')
+            {
+                if (sendBuff == "{CONNECTED}")
+                {
+                    break;
+                }
+                sendBuff = "";
+            }
+        }
     }
     Serial.print("{SP}");
     start_time = millis();
-
-
 }
 
-void loop() {
+void loop()
+{
     controller.run();
     sensorReading();
 
@@ -235,30 +240,53 @@ void loop() {
     velocidad = KP * error + KD * derivativo;
     error_anterior = error;
 
-    if (right_val >= threshold) {  // RIGHT
+    if (right_val >= threshold)
+    { // RIGHT
+        if (found_line)
+        {
+            Serial.print("{FL}");
+            found_line = false;
+        }
         lost_line = true;
 
         anterior = 1;
-        
-        turnRight(velocidad);
 
-    } else if (left_val >= threshold) {  // LEFT
+        turnRight(velocidad);
+    }
+    else if (left_val >= threshold)
+    { // LEFT
+        if (found_line)
+        {
+            Serial.print("{FL}");
+            found_line = false;
+        }
         lost_line = true;
         anterior = 2;
         turnLeft(velocidad);
-
-    } else if (mid_val >= threshold) {  // FORWARD
+    }
+    else if (mid_val >= threshold)
+    { // FORWARD
+        if (found_line)
+        {
+            Serial.print("{FL}");
+            found_line = false;
+        }
         lost_line = true;
         // tenia 100 y va bien
         forward(SPEED_LINEAR);
-    } else {
-        if (first_time) {
+    }
+    else
+    {
+        if (first_time)
+        {
             first_time = false;
-            lost_line = true;   
+            lost_line = true;
         }
-        if (lost_line) {
+        if (lost_line)
+        {
             Serial.print("{LT}");
             lost_line = false;
+            found_line = true;
         }
         r = 255;
         g = 0;
@@ -266,16 +294,15 @@ void loop() {
 
         FastLED.showColor(Color(r, g, b));
         recovery();
-
     }
 
-    if (distance < 15) {  // STOP
-      // 
-      final_time = millis() - start_time;
-      Serial.print("{OD}");
-      Serial.print(distance);
-      
-      stop_motors();
-    }
+    if (distance < 15)
+    { // STOP
+        //
+        final_time = millis() - start_time;
+        Serial.print("{OD}");
+        Serial.print(distance);
 
+        stop_motors();
+    }
 }
