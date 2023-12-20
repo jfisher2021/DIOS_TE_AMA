@@ -63,14 +63,15 @@ void connectToMQTT()
 
 void publishData(const char *data)
 {
-  if (mqtt.publish(topic, data))
-  {
-    Serial.println("Data published to MQTT");
-  }
-  else
-  {
-    Serial.println("Failed to publish data");
-  }
+  (mqtt.publish(topic, data));
+  // if (mqtt.publish(topic, data))
+  // {
+  //   Serial.println("Data published to MQTT");
+  // }
+  // else
+  // {
+  //   Serial.println("Failed to publish data");
+  // }
 }
 
 void start_lap_message()

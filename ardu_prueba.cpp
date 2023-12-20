@@ -48,12 +48,12 @@ const int threshold = 500; // 700
 // PIN_Motor_PWMB: Analog output [0-255]. It provides speed.
 #define PIN_Motor_PWMB 6
 
-#define SPEED_LINEAR 180 // 180
+#define SPEED_LINEAR 220 // 180
 // aqui tenia 120
 const int i_show_speed_angular = 150; // 150
 //-----------------------------
 
-int left_val, right_val, mid_valost_linel, error, derivativo, error_anterior, velocidad, anterior;
+int left_val, right_val, mid_val, error, derivativo, error_anterior, velocidad, anterior;
 long distance;
 Thread temporary_check_thread = Thread();
 ThreadController controller = ThreadController();
@@ -198,7 +198,6 @@ void setup()
     temporary_check_thread.enabled = true;
     temporary_check_thread.setInterval(4000);
     temporary_check_thread.onRun(ping_time_check);
-    controller.add(&temporary_check_thread);
 
     // LED
     FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
@@ -228,6 +227,8 @@ void setup()
     }
     Serial.print("{SP}");
     start_time = millis();
+    controller.add(&temporary_check_thread);
+
 }
 
 void loop()
