@@ -127,6 +127,8 @@ void start_lap_message() {
 }
 ```
 
+----------------------------------------------------------------
+
 Además se han implementado Arduino Threads para simplificar algunas tareas en esta práctica. Para ello implementamos las librerías de <Thread.h>
 y <ThreadController.h>. Definimos los threads de la siguiente manera: 
 ```c++
