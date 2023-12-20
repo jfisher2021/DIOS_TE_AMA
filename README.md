@@ -92,7 +92,7 @@ void recovery() {
 }
 ```
 
-### esp32
+### Esp32
 
 Respecto a la ESP32, se ha implementado de tal manera que se comunicará con el Arduino mediante la 'SerialCommunication'. Se han proporcionado muchos códgios al respecto en la wiki de la asignatura, de los cuales hemos obtenido el 'esqueleto' de nuestra implementación. 
 A la hora de comunicarse entre la ESP32 y Arduino Uno en nuestro código, en la función setup() nos encontramos con la inicialización de la comunicación entre sí:
