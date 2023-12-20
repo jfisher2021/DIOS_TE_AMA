@@ -49,9 +49,9 @@ const int threshold = 500;  // 700
 // PIN_Motor_PWMB: Analog output [0-255]. It provides speed.
 #define PIN_Motor_PWMB 6
 
-#define SPEED_LINEAR 130 //180
+#define SPEED_LINEAR 180 //180
 // aqui tenia 120
-const int i_show_speed_angular = 120; //150
+const int i_show_speed_angular = 150; //150
 //-----------------------------
 
 int left_val, right_val, mid_val, error, derivativo, error_anterior, velocidad, anterior;
@@ -118,7 +118,7 @@ void stop_motors() {
     b = 255;
     FastLED.showColor(Color(r, g, b));
     motorControl(false, 0, false, 0);
-    Serial.print("{{END_LAP}");
+    Serial.print("{{EL}");
 
     while (1)
     {
@@ -144,12 +144,12 @@ void distance_ping() {
 void ping_time_check(){
   long time = millis();
   //Serial.print("{PING}" + String(time) + "*");
-  Serial.print("{PING}");
+  Serial.print("{PG}");
 }
 
 void recovery() {
     if (recovery_line) {
-        Serial.print("{SEARCHING}");
+        Serial.print("{SE}");
         recovery_line = false;
         found_line = true;
     }
@@ -163,7 +163,7 @@ void recovery() {
 
 void line() {
     if (found_line) {
-        Serial.print("{LINE_FOUND}");
+        Serial.print("{LF}");
         found_line = false;
         lost_line = true;
     }
@@ -221,7 +221,7 @@ void setup() {
         } 
       }
     }
-    Serial.print("{START_LAP}");
+    Serial.print("{SP}");
     start_time = millis();
 
 
@@ -254,7 +254,7 @@ void loop() {
 
         }
         if (lost_line) {
-            Serial.print("{LINE_LOST}");
+            Serial.print("{LT}");
             lost_line = false;
             recovery_line = true;
         }
@@ -269,7 +269,7 @@ void loop() {
 
     if (distance < 10) {  // STOP
       //
-      Serial.print("{OBSTACLE_DETECTED}");
+      Serial.print("{OD}");
       Serial.print(distance);
       stop_motors();
     }
