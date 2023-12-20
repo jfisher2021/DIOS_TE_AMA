@@ -16,7 +16,8 @@
 6. [Comunicación Serie](#comunicación-serie)
 7. [Comunicación IoT](#comunicación-iot)
    7.1. [MQTT](#mqtt)
-
+Extra   [Opcionales](#Opcionales)
+Media   [Video funcionamiento](#Video)
 ### Descripción del Proyecto
 
 Este proyecto utiliza un robot equipado con sensores infrarrojos para seguir una línea negra trazada en el suelo. El robot incluye un modelo ESP32 CAM, que nos permite comunicarnos a través de cualquier red WiFi. Una vez comunicados con la wifi podemos enviar los datos de los sensores a un servidor MQTT, que nos permitirá visualizar los datos en tiempo real.
@@ -34,7 +35,7 @@ Para este proyecto, necesitarás los siguientes componentes:
 
 ### SEGUIR LINEA 
 
-Lo primero que hicimos fue probar y entender el codigo de prueba proporcionado en el git de la asignatura. Estuvimos tanteando con el sensor infrarrojo y viendo como funcionaba. Al ser analogico nos daba valores de entre 0 y 1023, siendo 0 cuando  más oscuro y 1023 cuando más claro.
+Lo primero que hicimos fue probar y entender el codigo de prueba proporcionado en la wiki de la asignatura. Estuvimos tanteando con el sensor infrarrojo y viendo como funcionaba. Al ser analogico nos daba valores de entre 0 y 1023, siendo 0 cuando  más oscuro y 1023 cuando más claro.
 
 ```c++
 #define PIN_ITR20001-LEFT   A2
@@ -145,3 +146,10 @@ distance_thread.enabled = true;
  temporary_check_thread.onRun(ping_time_check);
  controller.add(&temporary_check_thread);
 ```
+### Opcionales
+
+Además de los mensajes de Inicio de vuelta, Final de vuelta, Línea perdida y Obstaculo Detectado. Se han implementado los mensajes opcionales. Debido a que no siempre funcionaban y que el código no era lo suficientemente robusto, el que se ha utilizado el dia del examen ha sido una versión anterior donde nos asergurábamos de que el funcionamiento obligatorio funcionara sin problemas. 
+
+
+### Video
+//pegar link
