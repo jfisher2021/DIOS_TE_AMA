@@ -25,6 +25,7 @@ Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_K
 
 
 unsigned long start_time = millis();
+unsigned long final_time ;
 String dist = "";
 
 
@@ -121,16 +122,16 @@ void loop() {
       if (receive_buff == "{CONNECT}"){
         connectToMQTT();
       } else if(receive_buff == "{START_LAP}"){
-        start_time = millis();
         //time for pinging
         partial_time= millis();
         start_lap_message();
+        start_time = millis();
 
       } else if (receive_buff == "{LINE_LOST}"){
         track_loose_message();
 
       } else if (receive_buff == "{OBSTACLE_DETECTED}"){
-
+        final_time = millis() - start_time;
         dist = Serial2.readStringUntil('{');
         obstacle_detection_message();
         
@@ -140,7 +141,7 @@ void loop() {
         ping_message(millis()-start_time);
 
       } else if(receive_buff == "{END_LAP}"){
-        end_lap_message(millis()-start_time);
+        end_lap_message(final_time);
       }
       receive_buff="";
 
