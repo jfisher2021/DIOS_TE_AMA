@@ -121,26 +121,26 @@ void loop() {
       }
       if (receive_buff == "{CONNECT}"){
         connectToMQTT();
-      } else if(receive_buff == "{START_LAP}"){
+      } else if(receive_buff == "{SP}"){
         //time for pinging
         partial_time= millis();
         start_lap_message();
         start_time = millis();
 
-      } else if (receive_buff == "{LINE_LOST}"){
+      } else if (receive_buff == "{LT}"){
         track_loose_message();
 
-      } else if (receive_buff == "{OBSTACLE_DETECTED}"){
+      } else if (receive_buff == "{OD}"){
         final_time = millis() - start_time;
         dist = Serial2.readStringUntil('{');
         obstacle_detection_message();
         
         
 
-      } else if(receive_buff == "{PING}"){  
+      } else if(receive_buff == "{PG}"){  
         ping_message(millis()-start_time);
 
-      } else if(receive_buff == "{END_LAP}"){
+      } else if(receive_buff == "{EL}"){
         end_lap_message(final_time);
       }
       receive_buff="";
