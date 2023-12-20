@@ -140,6 +140,7 @@ void loop() {
 
       } else if (receive_buff == "{LINE_LOST}"){
         track_loose_message();
+        searching_line_message();
 
       } else if (receive_buff == "{OBSTACLE_DETECTED}"){
 
@@ -150,8 +151,6 @@ void loop() {
 
       } else if(receive_buff == "{END_LAP}"){
         end_lap_message(millis()-start_time);
-      } else if (receive_buff == "{SEARCHING}"){
-        searching_line_message();
       } else if (receive_buff == "{LINE_FOUND}") {
         line_found();
       }
