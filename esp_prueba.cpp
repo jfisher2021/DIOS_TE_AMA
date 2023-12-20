@@ -23,7 +23,6 @@ uint16_t MQTT_PORT = 21883;
 WiFiClient client;
 Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT, MQTT_USERNAME, MQTT_KEY);
 
-unsigned long start_time = millis();
 unsigned long final_time;
 int dintance = 0, time_ping = 0;
 String dist = "";
@@ -159,9 +158,7 @@ void loop()
       else if (receive_buff == "{SP}")
       {
         // time for pinging
-        partial_time = millis();
         start_lap_message();
-        start_time = millis();
       }
       else if (receive_buff == "{LT}")
       {

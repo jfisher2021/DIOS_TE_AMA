@@ -59,7 +59,8 @@ Thread temporary_check_thread = Thread();
 ThreadController controller = ThreadController();
 Thread distance_thread = Thread();
 
-unsigned int start_time, final_time, time;
+unsigned int start_time, final_time, time, tiempo_linea;
+
 
 uint32_t Color(uint8_t r, uint8_t g, uint8_t b)
 {
@@ -155,12 +156,6 @@ void ping_time_check()
 
 void recovery()
 {
-    // if (recovery_line) {
-    //     Serial.print("{SE}");
-    //     recovery_line = false;
-    //     found_line = true;
-    // }
-
     if (anterior == 1)
     {
         motorControl(false, 0, true, i_show_speed_angular * 1.5);
@@ -170,6 +165,7 @@ void recovery()
         motorControl(true, i_show_speed_angular * 1.5, false, 0);
     }
 }
+
 
 void setup()
 {
@@ -195,9 +191,6 @@ void setup()
     distance_thread.setInterval(100);
     distance_thread.onRun(distance_ping);
     controller.add(&distance_thread);
-    temporary_check_thread.enabled = true;
-    temporary_check_thread.setInterval(4000);
-    temporary_check_thread.onRun(ping_time_check);
 
     // LED
     FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
@@ -227,6 +220,10 @@ void setup()
     }
     Serial.print("{SP}");
     start_time = millis();
+    temporary_check_thread.enabled = true;
+    temporary_check_thread.setInterval(4000);
+    temporary_check_thread.onRun(ping_time_check);
+
     controller.add(&temporary_check_thread);
 
 }
@@ -241,8 +238,8 @@ void loop()
     velocidad = KP * error + KD * derivativo;
     error_anterior = error;
 
-    if (right_val >= threshold)
-    { // RIGHT
+    if (right_val >= threshold || left_val >= threshold || mid_val >= threshold)
+    {
         if (found_line)
         {
             Serial.print("{FL}");
@@ -250,31 +247,21 @@ void loop()
         }
         lost_line = true;
 
-        anterior = 1;
-
-        turnRight(velocidad);
-    }
-    else if (left_val >= threshold)
-    { // LEFT
-        if (found_line)
-        {
-            Serial.print("{FL}");
-            found_line = false;
+        if (right_val >= threshold)
+        { // RIGHT
+            anterior = 1;
+            turnRight(velocidad);
         }
-        lost_line = true;
-        anterior = 2;
-        turnLeft(velocidad);
-    }
-    else if (mid_val >= threshold)
-    { // FORWARD
-        if (found_line)
-        {
-            Serial.print("{FL}");
-            found_line = false;
+        else if (left_val >= threshold)
+        { // LEFT
+            anterior = 2;
+            turnLeft(velocidad);
         }
-        lost_line = true;
-        // tenia 100 y va bien
-        forward(SPEED_LINEAR);
+        else if (mid_val >= threshold)
+        { // FORWARD
+            // tenia 100 y va bien
+            forward(SPEED_LINEAR);
+        }
     }
     else
     {
