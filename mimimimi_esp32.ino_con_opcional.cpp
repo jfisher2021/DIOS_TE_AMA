@@ -134,8 +134,6 @@ void loop() {
         final_time = millis() - start_time;
         dist = Serial2.readStringUntil('{');
         obstacle_detection_message();
-        
-        
 
       } else if(receive_buff == "{PG}"){  
         ping_message(millis()-start_time);
