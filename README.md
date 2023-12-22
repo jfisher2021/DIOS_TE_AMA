@@ -157,7 +157,7 @@ distance_thread.enabled = true;
 ```
 ### Opcionales
 
-Además de los mensajes de Inicio de vuelta, Final de vuelta, Línea perdida y Obstaculo Detectado. Se han implementado los mensajes opcionales. Debido a que no siempre funcionaban y que el código no era lo suficientemente robusto, el que se ha utilizado el dia del examen ha sido una versión anterior donde nos asergurábamos de que el funcionamiento obligatorio funcionara sin problemas. 
+Además de los mensajes de Inicio de vuelta, Final de vuelta, Línea perdida y Obstaculo Detectado. Se han implementado los mensajes opcionales. Debido a que no todos ellos nos funcionaban y que el código no era lo suficientemente robusto, el que se ha utilizado el dia del examen ha sido una versión anterior donde nos asergurábamos de que el funcionamiento obligatorio, además de algunos mensajes opcionales, funcionaran sin problemas. 
 
 ##### Funcionamiento de search() (NO IMPLEMENTADO EN EL EXAMEN)
 Como hemos implementado en el LostLine y FoundLine, creamos otro booleano que se activa cuando ha perdido la linea y se desactiva una vez llamado para que solo lo imprima una vez. 
