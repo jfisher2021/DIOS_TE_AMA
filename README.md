@@ -27,8 +27,7 @@ Este proyecto utiliza un robot equipado con sensores infrarrojos para seguir una
 
 ### Video
 
-https://github.com/jfisher2021/DIOS_TE_AMA/assets/113594937/44c3c0f1-5781-4954-a3f6-6b993c870347
-
+https://github.com/jfisher2021/DIOS_TE_AMA/assets/113594937/28c11347-1fcc-430a-af50-1df26088617d
 
 ### Componentes Necesarios
 
