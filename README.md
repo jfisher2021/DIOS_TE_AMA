@@ -154,4 +154,7 @@ Además de los mensajes de Inicio de vuelta, Final de vuelta, Línea perdida y O
 
 
 ### Video
-//pegar link
+
+https://github.com/jfisher2021/DIOS_TE_AMA/assets/113594937/44c3c0f1-5781-4954-a3f6-6b993c870347
+
+
