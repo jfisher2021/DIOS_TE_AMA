@@ -48,7 +48,7 @@ const int threshold = 500; // 700
 // PIN_Motor_PWMB: Analog output [0-255]. It provides speed.
 #define PIN_Motor_PWMB 6
 
-#define SPEED_LINEAR 220 // 180
+#define SPEED_LINEAR 180 // 180
 // aqui tenia 120
 const int i_show_speed_angular = 150; // 150
 //-----------------------------
