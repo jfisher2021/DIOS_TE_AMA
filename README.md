@@ -25,6 +25,8 @@
 
 Este proyecto utiliza un robot equipado con sensores infrarrojos para seguir una línea negra trazada en el suelo. El robot incluye un modelo ESP32 CAM, que nos permite comunicarnos a través de cualquier red WiFi. Una vez comunicados con la wifi podemos enviar los datos de los sensores a un servidor MQTT, que nos permitirá visualizar los datos en tiempo real.
 
+En este repositorio se muestran dos versiones del código, una versión inicial con los requerimientos obligatorios y una versión final con parte de los opcionales.
+
 ### Video
 
 https://github.com/jfisher2021/DIOS_TE_AMA/assets/113594937/28c11347-1fcc-430a-af50-1df26088617d
