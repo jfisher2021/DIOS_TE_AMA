@@ -4,38 +4,46 @@
 
 # Índice
 
-1. [Descripción](#Descripción-del-Proyecto)
-4. [Componentes Necesarios](#Componentes-Necesarios)
-   4.1. [Ultrasonido](#ultrasonido)
-   4.2. [Sensor Infra-rojo](#sensor-infra-rojo)
-   4.3. [Motores](#motores)
-   4.4. [LED](#led)
-5. [ESP32](#esp32)
-   5.1. [Arduino-IDE y librerías](#arduino-ide-y-librerías)
-   5.2. [Comprobar la conexión WiFi](#comprobar-la-conexión-wifi)
-6. [Comunicación Serie](#comunicación-serie)
-7. [Comunicación IoT](#comunicación-iot)
-   7.1. [MQTT](#mqtt)
-Extra   [Opcionales](#Opcionales)
-Media   [Video funcionamiento](#Video)
+1. [Descripción del Proyecto](#descripción-del-proyecto)
+2. [Video](#video)
+3. [Componentes Necesarios](#componentes-necesarios)
+   - [Ultrasonido](#ultrasonido)
+   - [Sensor Infra-rojo](#sensor-infra-rojo)
+   - [Motores](#motores)
+   - [LED](#led)
+4. [ESP32](#esp32)
+   - [Arduino-IDE y librerías](#arduino-ide-y-librerías)
+   - [Comprobar la conexión WiFi](#comprobar-la-conexión-wifi)
+5. [Comunicación Serie](#comunicación-serie)
+6. [Comunicación IoT](#comunicación-iot)
+   - [MQTT](#mqtt)
+7. [Opcionales](#opcionales)
+
+
+
 ### Descripción del Proyecto
 
 Este proyecto utiliza un robot equipado con sensores infrarrojos para seguir una línea negra trazada en el suelo. El robot incluye un modelo ESP32 CAM, que nos permite comunicarnos a través de cualquier red WiFi. Una vez comunicados con la wifi podemos enviar los datos de los sensores a un servidor MQTT, que nos permitirá visualizar los datos en tiempo real.
+
+### Video
+
+https://github.com/jfisher2021/DIOS_TE_AMA/assets/113594937/44c3c0f1-5781-4954-a3f6-6b993c870347
+
 
 ### Componentes Necesarios
 
 Para este proyecto, necesitarás los siguientes componentes:
 
-  - ELEGOO Smart Robot Car V4.0 with Camera
-  - Placa ESP32
-  - Batería o fuente de alimentación para el coche y la ESP32
-  - Cables para conectar los componentes (uno usb-C para la ESP32)
+  - ELEGOO Smart Robot Car V4.0 with Camera 🏎️
+  - Placa ESP32 🛜
+  - Batería o fuente de alimentación para el coche y la ESP32 🔋
+  - Cables para conectar los componentes (uno usb-C para la ESP32) 🔌
 
 ## PRIMEROS PASOS CON EL ROBOT
 
 ### SEGUIR LINEA 
 
-Lo primero que hicimos fue probar y entender el codigo de prueba proporcionado en la wiki de la asignatura. Estuvimos tanteando con el sensor infrarrojo y viendo como funcionaba. Al ser analogico nos daba valores de entre 0 y 1023, siendo 0 cuando  más oscuro y 1023 cuando más claro.
+Lo primero que hicimos fue probar y entender el codigo de prueba proporcionado en la wiki de la asignatura. Estuvimos tanteando con el sensor infrarrojo y viendo como funcionaba. Al ser analogico nos daba valores de entre 0 y 1023, siendo 0 cuando  más claro y 1023 cuando más oscuro.
 
 ```c++
 #define PIN_ITR20001-LEFT   A2
@@ -75,11 +83,11 @@ La solucion fue muy secilla al igual que ingeniosa (o eso creemos). Lo que hicim
 
 - PRIMER INTENTO
 
-Nos creamos una variable global para saber por que lado se salio de la linea y asi poder girar en el sentido contrario. (Si se sale por la derecha girar a la izquierda y viceversa). Parece que esta solucion es super buena y brillante pero cuando la probamos nos dimos cuenta de que no era tan buena como parecia. Nos dimos cuenta de que el robot no se perdia por girrar mucho y por lo tanto girar en ell sentido inverso como la loica podria indicar. El robot se perdia por girar poco y por lo tanto girar en el sentido inverso no era la solucion.
+Nos creamos una variable global para saber por que lado se salio de la linea y asi poder girar en el sentido contrario. (Si se sale por la derecha girar a la izquierda y viceversa). Parece que esta solucion es super buena y brillante pero cuando la probamos nos dimos cuenta de que no era tan buena como parecia. Nos dimos cuenta de que el robot no se perdia por girar mucho y por lo tanto girar en el sentido inverso como la loica podria indicar no era la mejor opcion. El robot se perdia por girar poco y por lo tanto girar en el sentido inverso no era la solucion.
 
 - SEGUNDO INTENTO Y DEFINITIVO
 
-Una vez entendido lo que pasaba simplemente cambiamos el sentido de giro y listo. PAra ello ponemos una velocidad mayor que la de el PD para uqe gire rapido y encuentre la linea. 
+Una vez entendido lo que pasaba simplemente cambiamos el sentido de giro y listo. Para ello ponemos una velocidad mayor que la de el PD para que gire mas rápido y encuentre la linea. 
 
 ```c++
 void recovery() {
@@ -99,7 +107,7 @@ A la hora de comunicarse entre la ESP32 y Arduino Uno en nuestro código, en la 
 ```c++
 Serial2.begin(9600,SERIAL_8N1, RXD2, TXD2);
 ```
-Para que más tarde de forma periódica en la función loop(), se pueda definir que una vez que empiece la comunicación, se almacene la información en un buffer y en base a esta información almacenada, se puedan efectuar unas accione u otras:
+Para que más tarde de forma periódica en la función loop(), se pueda definir que una vez que empiece la comunicación, se almacene la información en un buffer y en base a esta información almacenada, se puedan efectuar unas acciones u otras:
 ```c++
   if (Serial2.available()) {
     char c = Serial2.read();
@@ -152,9 +160,80 @@ distance_thread.enabled = true;
 
 Además de los mensajes de Inicio de vuelta, Final de vuelta, Línea perdida y Obstaculo Detectado. Se han implementado los mensajes opcionales. Debido a que no siempre funcionaban y que el código no era lo suficientemente robusto, el que se ha utilizado el dia del examen ha sido una versión anterior donde nos asergurábamos de que el funcionamiento obligatorio funcionara sin problemas. 
 
+##### Funcionamiento de search() (NO IMPLEMENTADO EN EL EXAMEN)
+Como hemos implementado en el LostLine y FoundLine, creamos otro booleano que se activa cuando ha perdido la linea y se desactiva una vez llamado para que solo lo imprima una vez. 
 
-### Video
+```c++
 
-https://github.com/jfisher2021/DIOS_TE_AMA/assets/113594937/44c3c0f1-5781-4954-a3f6-6b993c870347
+// codigo en el arduino
+void recovery()
+{
+  if (recovery_bool)
+  {
+    Serial.print("{RE}");
+    recovery_bool = false;
+  }
+  // resto de codigo
+}
+
+//en el loop 
+if (lost_line)
+        {
+            Serial.print("{LT}");
+            lost_line = false;
+            found_line = true;
+            recovery_bool = true;
+        }
+```
+
+```c++
+
+// codigo en la esp32
+void search()
+{
+  char message[256];
+  sprintf(message, "{\n\t\"team_name\":\"DIOS_TE_AMA\",\n\t\"id\":\"%s\",\n\t\"action\":\"SEARCHING_LINE\"\n}", id_equipo);
+  publishData(message);
+}
+
+// en el loop
+if (receive_buff == "{SE}")
+  {
+    search();
+  }
+
+```
+
+##### porcentaje de la linea (NO IMPLEMENTADO EN EL EXAMEN)
+
+Esta es una solucion que se me ocurrio para sacar el porcentaje pero debido al problema del envio de mensajes, qeu aunque el codigo estaba bien a veces no se enviaban los mensajes, no lo implementamos en el examen. 
+
+```c++
+unsigned long timeOnLine = 0;
+
+void loop()
+{
+    unsigned long loopStartTime = millis();
+    
+    if (right_val >= threshold || left_val >= threshold || mid_val >= threshold) {
+        timeOnLine += millis() - loopStartTime;
+    }
+
+    // resto del codigo
+
+    if (distance < 15) { // STOP
+        // resto del codigo
+        // Calcular el porcentaje de la linea
+        float percentageOnLine = (float)timeOnLine / final_time * 100;
+        Serial.print("{LP}");
+        Serial.print(percentageOnLine);
+        stop_motors();
+    }
+}
+```
+
+En este codigo se van sumando los milisegundos que esta en la linea y cuando se detecta un obstaculo se calcula el porcentaje de tiempo que ha estado en la linea y se envia el mensaje. Cabe recalcar que no hemos podido probar este codigo ya que no nos funcionaba el envio de mensajes. Por lo tanto ha sido una solucion puramente teorica.
+
+
 
 
